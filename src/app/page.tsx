@@ -12,7 +12,7 @@ export default function Home() {
               <h1 className="text-4xl md:text-5xl font-headline font-bold text-foreground tracking-tight">
                 PromptPilot
               </h1>
-              <div className="-mt-2">
+              <div className="-mt-4">
                 <Logo />
               </div>
             </div>
