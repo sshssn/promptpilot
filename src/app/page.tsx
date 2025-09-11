@@ -9,7 +9,7 @@ export default function Home() {
         <div className="flex items-center gap-4">
           <Logo />
           <div className="text-center w-full lg:text-left">
-            <h1 className="text-4xl md:text-5xl font-headline font-bold text-primary-foreground/90 tracking-tight">
+            <h1 className="text-4xl md:text-5xl font-headline font-bold text-foreground/90 tracking-tight">
               PromptPilot
             </h1>
             <p className="mt-2 text-lg text-muted-foreground font-body">
