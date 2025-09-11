@@ -10,18 +10,18 @@ export default function Home() {
       </div>
 
       <div className="w-full max-w-5xl">
-        <div className="flex flex-col items-center lg:items-start">
-            <div className="flex items-baseline justify-center lg:justify-start">
-                <h1 className="text-4xl md:text-5xl font-headline font-bold text-foreground tracking-tight">
-                PromptPilot
-                </h1>
-                <div className="-ml-1 -mt-4">
-                <Logo />
-                </div>
+        <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
+          <div className="flex items-baseline justify-center lg:justify-start">
+            <h1 className="text-4xl md:text-5xl font-headline font-bold text-foreground tracking-tight">
+              PromptPilot
             </h1>
-            <p className="mt-2 text-lg text-muted-foreground font-body text-center lg:text-left">
-                Your AI co-pilot for crafting and refining high-quality prompts.
-            </p>
+            <div className="-ml-1 -mt-8">
+              <Logo />
+            </div>
+          </div>
+          <p className="mt-2 text-lg text-muted-foreground font-body">
+            Your AI co-pilot for crafting and refining high-quality prompts.
+          </p>
         </div>
       </div>
 
