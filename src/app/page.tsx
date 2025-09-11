@@ -5,7 +5,7 @@ import { ThemeToggle } from '@/components/theme-toggle';
 export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center p-4 sm:p-8 md:p-12 lg:p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between text-sm lg:flex mb-12">
+      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex mb-12">
         <div className="flex items-center gap-4">
           <Logo />
           <div className="text-center w-full lg:text-left">
