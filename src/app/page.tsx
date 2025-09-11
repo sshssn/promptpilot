@@ -15,7 +15,7 @@ export default function Home() {
             <h1 className="text-4xl md:text-5xl font-headline font-bold text-foreground tracking-tight">
               PromptPilot
             </h1>
-            <div className="-ml-2 -mt-8">
+            <div className="ml-1">
               <Logo />
             </div>
           </div>
