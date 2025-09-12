@@ -2,7 +2,7 @@
 
 PromptPilot is an AI-powered co-pilot designed to help developers and creators craft, refine, and manage high-quality prompts for generative AI models. It provides a streamlined interface for both generating new prompts from scratch and improving existing ones.
 
-![PromptPilot Screenshot](https://i.imgur.com/your-screenshot.png) <https://raw.githubusercontent.com/sshssn/promptpilot/refs/heads/main/app-ui.png>
+![PromptPilot Screenshot] <https://raw.githubusercontent.com/sshssn/promptpilot/refs/heads/main/app-ui.png>
 
 ## Features
 
