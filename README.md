@@ -1,5 +1,60 @@
-# Firebase Studio
+# PromptPilot
 
-This is a NextJS starter in Firebase Studio.
+PromptPilot is an AI-powered co-pilot designed to help developers and creators craft, refine, and manage high-quality prompts for generative AI models. It provides a streamlined interface for both generating new prompts from scratch and improving existing ones.
 
-To get started, take a look at src/app/page.tsx.
+![PromptPilot Screenshot](https://i.imgur.com/your-screenshot.png) <!-- It's a good idea to add a screenshot of your app here -->
+
+## Features
+
+- **Generate New Prompts**: Create well-structured prompts by defining a role, context, sample inputs, and expected outputs.
+- **Improve Existing Prompts**: Refine and optimize your current prompts by describing the issues and the desired changes.
+- **Joblogic Integration**: Enhance prompts with contextual knowledge from the Joblogic knowledge base.
+- **Light & Dark Mode**: A sleek, modern interface with support for both light and dark themes.
+- **Copy to Clipboard**: Easily copy generated prompts to use in your projects.
+
+## Tech Stack
+
+- **Framework**: [Next.js](https://nextjs.org/) (with App Router)
+- **AI Integration**: [Genkit](https://firebase.google.com/docs/genkit)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **UI Components**: [ShadCN UI](https://ui.shadcn.com/)
+- **Icons**: [Lucide React](https://lucide.dev/guide/packages/lucide-react)
+
+## Getting Started
+
+Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes.
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) (version 20 or later)
+- [npm](https://www.npmjs.com/) or another package manager like [Yarn](https://yarnpkg.com/) or [pnpm](https://pnpm.io/)
+
+### Installation
+
+1.  **Clone the repository:**
+    ```sh
+    git clone https://github.com/sshssn/promptpilot.git
+    cd promptpilot
+    ```
+
+2.  **Install dependencies:**
+    ```sh
+    npm install
+    ```
+
+3.  **Set up environment variables:**
+    Create a `.env` file in the root of your project and add your Google AI API key:
+    ```
+    GEMINI_API_KEY=your_api_key_here
+    ```
+
+4.  **Run the development server:**
+    ```sh
+    npm run dev
+    ```
+
+The application will be available at `http://localhost:9002`.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
