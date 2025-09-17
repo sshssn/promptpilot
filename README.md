@@ -42,10 +42,18 @@ Follow these instructions to get a copy of the project up and running on your lo
     ```
 
 3.  **Set up environment variables:**
-    Create a `.env` file in the root of your project and add your Google AI API key:
+    Create a `.env.local` file in the root of your project and add your API keys:
     ```
-    GEMINI_API_KEY=your_api_key_here
+    # DeepSeek API Configuration
+    DEEPSEEK_API_KEY=your_deepseek_api_key_here
+    OPENAI_API_KEY=your_deepseek_api_key_here
+    OPENAI_BASE_URL=https://api.deepseek.com
+
+    # Google AI Configuration (for Gemini)
+    GOOGLE_GENAI_API_KEY=your_google_ai_api_key_here
     ```
+
+    **Note**: You can get your DeepSeek API key from [DeepSeek Platform](https://platform.deepseek.com/) and your Google AI API key from [Google AI Studio](https://aistudio.google.com/).
 
 4.  **Run the development server:**
     ```sh

@@ -1,19 +1,73 @@
 'use client';
 
 import { useState } from 'react';
-import { Logo } from '@/components/logo';
-import { PromptPilot } from '@/components/prompt-pilot';
-import { ThemeToggle } from '@/components/theme-toggle';
-import { PromptTemplatesSidebar } from '@/components/prompt-templates-sidebar';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Copy, Check, Play, FileText } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import Link from 'next/link';
+import { Bot, MessageSquare, HelpCircle, AlertTriangle, Settings, X, Copy } from 'lucide-react';
 
-// Import the prompt data from lang.md (Updated with latest versions)
-// Version: 1.0.0 - Updated from lang.md on ${new Date().toISOString().split('T')[0]}
-const promptData = {
-  supportchatbot_condition_agent: `You are an expert assistant trained to classify customer messages about Joblogic (Field Service Management software) into one of these categories:  
+interface PromptOption {
+  id: string;
+  name: string;
+  description: string;
+  icon: React.ComponentType<{ className?: string }>;
+  category: string;
+}
+
+const promptOptions: PromptOption[] = [
+  {
+    id: 'supportchatbot_condition_agent',
+    name: 'Classification Agent',
+    description: 'Classifies customer messages into categories (How-To, Complex, Issue, Request, Conversation)',
+    icon: Settings,
+    category: 'Classification'
+  },
+  {
+    id: 'supportchatbot_other_agent',
+    name: 'General Assistant',
+    description: 'Handles general Joblogic questions and provides comprehensive support',
+    icon: Bot,
+    category: 'General'
+  },
+  {
+    id: 'supportchatbot_conversation_llm',
+    name: 'Conversation Agent',
+    description: 'Manages greetings, acknowledgments, and conversation flow',
+    icon: MessageSquare,
+    category: 'Conversation'
+  },
+  {
+    id: 'supportchatbot_complex_agent',
+    name: 'Complex Query Agent',
+    description: 'Handles advanced troubleshooting and complex system issues',
+    icon: AlertTriangle,
+    category: 'Complex'
+  },
+  {
+    id: 'supportchatbot_howto_agent',
+    name: 'How-To Agent',
+    description: 'Provides step-by-step guidance and feature instructions',
+    icon: HelpCircle,
+    category: 'Guidance'
+  }
+];
+
+interface PromptSelectorProps {
+  onPromptSelect: (promptId: string) => void;
+  selectedPrompt?: string;
+  onDismiss?: () => void;
+  onPopulate?: (prompt: string) => void;
+}
+
+export function PromptSelector({ onPromptSelect, selectedPrompt, onDismiss, onPopulate }: PromptSelectorProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const selectedOption = promptOptions.find(option => option.id === selectedPrompt);
+
+  const handlePopulate = () => {
+    if (selectedPrompt && onPopulate) {
+      const promptData = {
+        supportchatbot_condition_agent: `You are an expert assistant trained to classify customer messages about Joblogic (Field Service Management software) into one of these categories:  
 
 1. 'How-To' – Guidance on using Joblogic features or performing tasks.
 A "How-To" query seeks instructions on functionality, features, navigation, configuration, or providing access to users  within Joblogic. This includes:
@@ -94,8 +148,7 @@ Output Rules:
 
 IMPORTANT!
 DO NOT try to call tools.  Only return the JSON structure with the data source, irrespective of the user's query.`,
-
-  supportchatbot_other_agent: `You are an intelligent assistant helping Joblogic (Field Service Management software) customers with their questions about Joblogic. Use 'you' to refer to the individual asking the questions even if they ask with 'I'. 
+        supportchatbot_other_agent: `You are an intelligent assistant helping Joblogic (Field Service Management software) customers with their questions about Joblogic. Use 'you' to refer to the individual asking the questions even if they ask with 'I'. 
 
 Instructions:
 Analyze the user query and tool sources to determine the query's specificity and the relevance of the retrieved information.
@@ -148,8 +201,7 @@ Example response format:
 #Reasoning: The user is requesting instructions on creating a custom report in Joblogic. This is a feature-related query, and the tool provides step-by-step guidance on using dynamic reports, custom form data, and report templates. Since the query is specific and directly answerable using available source, I will generate a response with clear steps.
 Tag: #Answer is Applied because the query is specific, related to Joblogic, and can be answered using the provided tool. No other tags are applied, as the query does not involve sensitive information, escalation, or require clarification.
 #Response: To generate an invoice in Joblogic, follow these steps: [steps]. #Answer`,
-
-  supportchatbot_conversation_llm: `You are an expert assistant trained to have conversations with customers.
+        supportchatbot_conversation_llm: `You are an expert assistant trained to have conversations with customers.
 
 1. If this is the user's first message in the conversation, always greet them professionally before responding.
 1.1 If the user provides a human name, personalize the response using their name and relevant greeting response. Use the following format:
@@ -177,8 +229,7 @@ Tag: #Answer is Applied because the query is specific, related to Joblogic, and 
 7. Negative Sentiments: Detect messages that express negative sentiment, including frustration, annoyance, dissatisfaction, or complaints about the service. This includes cases where the customer conveys disappointment or uses strong negative language. If a negative sentiment is detected, append #Escalate at the end.
 
 Otherwise just reply them professionally without any tag.`,
-
-  supportchatbot_complex_agent: `You are an intelligent assistant helping Joblogic (Field Service Management software) customers with their questions about Joblogic. Use 'you' to refer to the individual asking the questions even if they ask with 'I'. 
+        supportchatbot_complex_agent: `You are an intelligent assistant helping Joblogic (Field Service Management software) customers with their questions about Joblogic. Use 'you' to refer to the individual asking the questions even if they ask with 'I'. 
 
 Instructions:
 Analyze the user query and tool sources to determine the query's specificity and the relevance of the retrieved information.
@@ -314,8 +365,7 @@ Before generating a response, ALWAYS explicitly state your reasoning using the f
 #Reasoning: "Explain how the response was formulated using the sources or why it cannot be answered.  Clearly state only all applied tags (#Sensitive, #Escalate, #NoAnswer, #Probing, #Troubleshooting, #Answer) and justify each. If no tag is applied, confirm why no specific condition was met." 
 #Response: "[Generate the answer based on reasoning.]"
 **NOTE: ENSURE that #Response and #Reasoning are always shared together and MUST have same tags applied in them**`,
-
-  supportchatbot_howto_agent: `You are an intelligent assistant helping Joblogic (Field Service Management software) customers with their questions about Joblogic. Use 'you' to refer to the individual asking the questions even if they ask with 'I'. 
+        supportchatbot_howto_agent: `You are an intelligent assistant helping Joblogic (Field Service Management software) customers with their questions about Joblogic. Use 'you' to refer to the individual asking the questions even if they ask with 'I'. 
 
 Instructions:
 Analyze the user query and tool sources to determine the query's specificity and the relevance of the retrieved information.
@@ -367,131 +417,76 @@ Example response format:
 #Reasoning: The user is requesting instructions on creating a custom report in Joblogic. This is a feature-related query, and the tool provides step-by-step guidance on using dynamic reports, custom form data, and report templates. Since the query is specific and directly answerable using available source, I will generate a response with clear steps.
 Tag: #Answer is Applied because the query is specific, related to Joblogic, and can be answered using the provided tool. No other tags are applied, as the query does not involve sensitive information, escalation, or require clarification.
 #Response: To generate an invoice in Joblogic, follow these steps: [steps]. #Answer`
-};
-
-export default function Home() {
-  const [selectedPrompt, setSelectedPrompt] = useState<string>('');
-  const [copied, setCopied] = useState(false);
-  const [showTemplates, setShowTemplates] = useState(false);
-  const { toast } = useToast();
-
-  const handlePromptSelect = (template: any) => {
-    setSelectedPrompt(template.id);
-  };
-
-  const handleCopyPrompt = async () => {
-    if (selectedPrompt && promptData[selectedPrompt as keyof typeof promptData]) {
-      try {
-        await navigator.clipboard.writeText(promptData[selectedPrompt as keyof typeof promptData]);
-        setCopied(true);
-        toast({
-          title: "Copied!",
-          description: "Prompt has been copied to clipboard.",
-        });
-        setTimeout(() => setCopied(false), 2000);
-      } catch (err) {
-        toast({
-          title: "Error",
-          description: "Failed to copy prompt to clipboard.",
-          variant: "destructive",
-        });
+      };
+      
+      const prompt = promptData[selectedPrompt as keyof typeof promptData];
+      if (prompt && onPopulate) {
+        onPopulate(prompt);
       }
     }
   };
 
-  const handleClearSelectedPrompt = () => {
-    setSelectedPrompt('');
-    setCopied(false);
-  };
-
-  const handlePopulatePrompt = (prompt: string) => {
-    // This will be handled by the improve prompt form
-    navigator.clipboard.writeText(prompt);
-    toast({
-      title: "Copied!",
-      description: "Prompt copied to clipboard. Paste it in the 'Improve Existing' tab.",
-    });
-  };
-
   return (
-    <div className="bg-background flex flex-col flex-1 min-h-0">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50 flex-shrink-0">
-        <div className="flex items-center justify-between px-4 py-1.5">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowTemplates(!showTemplates)}
-              className="gap-1 text-xs h-7"
-            >
-              <FileText className="h-3 w-3" />
-              <span className="font-medium">Templates</span>
-            </Button>
-            <div className="h-3 w-px bg-border" />
-            <div className="flex items-baseline gap-2">
-              <h1 className="text-xl md:text-2xl font-headline font-bold text-foreground tracking-tight bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
-                PromptPilot
-              </h1>
-              <Logo />
-            </div>
-          </div>
-          <div className="flex items-center gap-1">
-            <Link href="/playground">
-              <Button variant="outline" size="sm" className="gap-1 text-xs h-7">
-                <Play className="h-3 w-3" />
-                <span className="font-medium">Playground</span>
-              </Button>
-            </Link>
-            <ThemeToggle />
-          </div>
+    <div className="w-full max-w-2xl mx-auto">
+      <div className="flex items-center justify-between mb-2">
+        <div>
+          <h2 className="text-sm font-medium text-foreground">Prompt Templates</h2>
         </div>
-      </header>
-
-      {/* Main Content */}
-      <div className="flex flex-1 min-h-0">
-        {/* Prompt Templates Sidebar */}
-        <PromptTemplatesSidebar
-          isOpen={showTemplates}
-          onToggle={() => setShowTemplates(!showTemplates)}
-          onSelectTemplate={handlePromptSelect}
-          promptData={promptData}
-        />
-
-        {/* Main Content Area */}
-        <div className="flex-1 flex flex-col min-w-0">
-          <div className="flex-1 p-2 md:p-3 overflow-auto">
-            <div className="max-w-4xl mx-auto space-y-6">
-              {selectedPrompt && (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-base font-semibold">Selected Prompt</h3>
-                    <Button
-                      onClick={handleCopyPrompt}
-                      variant="outline"
-                      size="sm"
-                      className="gap-2 text-xs h-6"
-                    >
-                      {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-                      {copied ? 'Copied!' : 'Copy Prompt'}
-                    </Button>
-                  </div>
-                  <div className="bg-muted/50 rounded-lg p-3 max-h-80 overflow-y-auto">
-                    <pre className="text-xs whitespace-pre-wrap font-mono">
-                      {promptData[selectedPrompt as keyof typeof promptData]}
-                    </pre>
-                  </div>
-                </div>
-              )}
-
-              {/* Main Prompt Pilot Interface */}
-              <section>
-                <PromptPilot onClearSelectedPrompt={handleClearSelectedPrompt} />
-              </section>
-            </div>
-          </div>
+        <div className="flex items-center gap-1">
+          {selectedPrompt && (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlePopulate}
+                className="h-7 px-2 text-xs gap-1"
+              >
+                <Copy className="h-3 w-3" />
+                Copy
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onDismiss}
+                className="h-7 px-2 text-xs"
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            </>
+          )}
         </div>
       </div>
+      
+      <Select value={selectedPrompt} onValueChange={onPromptSelect}>
+        <SelectTrigger className="w-full h-9 bg-background border border-border hover:border-primary/40 transition-colors">
+          <div className="flex items-center gap-2">
+            {selectedOption ? (
+              <>
+                <selectedOption.icon className="h-4 w-4 text-primary" />
+                <span className="font-medium text-sm">{selectedOption.name}</span>
+              </>
+            ) : (
+              <span className="text-muted-foreground text-sm">Select template...</span>
+            )}
+          </div>
+        </SelectTrigger>
+        
+        <SelectContent className="w-full">
+          {promptOptions.map((option) => (
+            <SelectItem key={option.id} value={option.id} className="p-2">
+              <div className="flex items-center gap-2 w-full">
+                <option.icon className="h-4 w-4 text-primary flex-shrink-0" />
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="font-medium text-sm">{option.name}</span>
+                  <Badge variant="secondary" className="text-xs px-1 py-0">
+                    {option.category}
+                  </Badge>
+                </div>
+              </div>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 }

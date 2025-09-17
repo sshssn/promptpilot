@@ -57,6 +57,8 @@ const enhancePromptWithJoblogicKnowledgeFlow = ai.defineFlow(
     const {output} = await enhancePromptWithJoblogicKnowledgePrompt({
       ...input,
       knowledge,
+    }, {
+      model: 'googleai/gemini-2.5-flash'
     });
     return {enhancedPrompt: output!.enhancedPrompt}; // Corrected to return the enhancedPrompt
   }

@@ -1,11 +1,11 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { LoaderCircle, Wand2, BookText } from 'lucide-react';
+import { LoaderCircle, Wand2, BookText, BarChart3, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -22,6 +22,11 @@ import { Switch } from '@/components/ui/switch';
 import { generatePromptAction, GeneratePromptInputs } from '@/app/actions';
 import { PromptDisplay } from './prompt-display';
 import { useToast } from '@/hooks/use-toast';
+import { FileUpload } from './file-upload';
+import { prepareFilesForGemini } from '@/lib/file-utils';
+import { useStorage } from '@/contexts/storage-context';
+import { PromptData } from '@/lib/storage';
+import Link from 'next/link';
 
 const formSchema = z.object({
   role: z.string().optional(),
@@ -31,36 +36,104 @@ const formSchema = z.object({
   enhanceWithJoblogic: z.boolean().default(false),
 });
 
-export function GeneratePromptForm() {
+interface GeneratePromptFormProps {
+  onPromptGenerated?: (prompt: string, context?: string, files?: File[]) => void;
+  onAnalyzeClick?: () => void;
+  hasGeneratedPrompt?: boolean;
+  initialData?: Partial<PromptData>;
+}
+
+export function GeneratePromptForm({ 
+  onPromptGenerated, 
+  onAnalyzeClick, 
+  hasGeneratedPrompt,
+  initialData
+}: GeneratePromptFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [generatedPrompt, setGeneratedPrompt] = useState<string | null>(null);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const { toast } = useToast();
+  const { prompts } = useStorage();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      role: '',
-      context: '',
+      role: initialData?.context || '',
+      context: initialData?.context || '',
       sampleInput: '',
       expectedOutput: '',
       enhanceWithJoblogic: false,
     },
   });
 
+  // Populate form when initialData changes
+  useEffect(() => {
+    if (initialData) {
+      form.reset({
+        role: initialData.context || '',
+        context: initialData.context || '',
+        sampleInput: '',
+        expectedOutput: '',
+        enhanceWithJoblogic: false,
+      });
+      if (initialData.improvedPrompt) {
+        setGeneratedPrompt(initialData.improvedPrompt);
+      }
+    }
+  }, [initialData, form]);
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     setGeneratedPrompt(null);
-    const result = await generatePromptAction(values as GeneratePromptInputs);
-    setIsLoading(false);
     
-    if (result.error) {
+    try {
+      let files = undefined;
+      if (uploadedFiles.length > 0) {
+        files = await prepareFilesForGemini(uploadedFiles);
+      }
+      
+      const enhancedValues = {
+        ...values,
+        files
+      };
+      
+      const result = await generatePromptAction(enhancedValues as GeneratePromptInputs);
+      
+      if (result.error) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: result.error,
+        });
+      } else if (result.data) {
+        setGeneratedPrompt(result.data);
+        
+        // Save to local storage
+        const promptData: Omit<PromptData, 'id' | 'timestamp'> = {
+          originalPrompt: result.data,
+          improvedPrompt: result.data,
+          context: values.context,
+          files: uploadedFiles.map(file => ({
+            name: file.name,
+            mimeType: file.type,
+            data: '', // Will be populated by prepareFilesForGemini
+            size: file.size
+          })),
+          type: 'generated'
+        };
+        prompts.savePrompt(promptData);
+        
+        // Notify parent component about the generated prompt
+        onPromptGenerated?.(result.data, values.context, uploadedFiles);
+      }
+    } catch (error) {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: result.error,
+        description: 'Failed to process files. Please try again.',
       });
-    } else if (result.data) {
-      setGeneratedPrompt(result.data);
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -126,6 +199,19 @@ export function GeneratePromptForm() {
               </FormItem>
             )}
           />
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-lg font-medium mb-2">Upload Files (Optional)</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Upload Excel files, PDFs, or images to provide additional context for prompt generation.
+              </p>
+              <FileUpload
+                onFilesChange={(files) => setUploadedFiles(files.map(f => f.file))}
+                maxFiles={5}
+              />
+            </div>
+          </div>
+
           <FormField
             control={form.control}
             name="enhanceWithJoblogic"
@@ -149,20 +235,70 @@ export function GeneratePromptForm() {
               </FormItem>
             )}
           />
-          <Button type="submit" disabled={isLoading} className="w-full md:w-auto">
-            {isLoading ? (
-              <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Wand2 className="mr-2 h-4 w-4" />
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button type="submit" disabled={isLoading} className="btn-responsive">
+              {isLoading ? (
+                <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Wand2 className="mr-2 h-4 w-4" />
+              )}
+              {isLoading ? 'Generating...' : 'Generate Prompt'}
+            </Button>
+            
+            {hasGeneratedPrompt && onAnalyzeClick && (
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={onAnalyzeClick}
+                className="btn-responsive"
+              >
+                <BarChart3 className="mr-2 h-4 w-4" />
+                Analyze Prompt
+              </Button>
             )}
-            {isLoading ? 'Generating...' : 'Generate Prompt'}
-          </Button>
+          </div>
         </form>
       </Form>
       {generatedPrompt && (
-        <div className="mt-8">
+        <div className="mt-8 space-y-4">
           <h3 className="text-lg font-headline font-semibold mb-2">Generated Prompt</h3>
           <PromptDisplay prompt={generatedPrompt} />
+          
+          {/* Launch Playground Section */}
+          <div className="mt-6 p-4 border border-primary/20 bg-primary/5 rounded-lg">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="font-medium flex items-center gap-2">
+                <Play className="h-4 w-4 text-primary" />
+                Test Your Generated Prompt
+              </h4>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              Launch the testing playground to interact with your generated prompt and see how it performs in real-time conversations.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Link 
+                href={`/playground?prompt=${encodeURIComponent(generatedPrompt)}&model=googleai/gemini-2.5-flash&temperature=0.7`}
+                className="btn-responsive"
+              >
+                <Button className="w-full gap-2">
+                  <Play className="h-4 w-4" />
+                  Launch Playground
+                </Button>
+              </Link>
+              
+              {hasGeneratedPrompt && onAnalyzeClick && (
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={onAnalyzeClick}
+                  className="btn-responsive"
+                >
+                  <BarChart3 className="mr-2 h-4 w-4" />
+                  Analyze Prompt
+                </Button>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>

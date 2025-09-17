@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Joblogic Chatbot Prompts - Test Document</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+            border-left: 4px solid #3498db;
+            padding-left: 15px;
+        }
+        h3 {
+            color: #2980b9;
+            margin-top: 25px;
+        }
+        .prompt-box {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+        }
+        .issues-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .good-example {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .test-instructions {
+            background-color: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .highlight {
+            background-color: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        li {
+            margin: 5px 0;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #ecf0f1;
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <h1>🤖 Joblogic Chatbot Prompts - Test Document</h1>
+    
+    <h2>📋 Overview</h2>
+    <p>This document contains sample prompts for testing the <strong>Prompt Evaluator & Corrector</strong> tool. Each prompt represents different scenarios that the evaluator should analyze and improve.</p>
+
+    <h2>1. Basic Conditional Agent Prompt (Needs Improvement)</h2>
+    <div class="prompt-box">You are a support chatbot. When users ask questions, help them. If they have problems, fix them. If they need help, help them.</div>
+    
+    <div class="issues-box">
+        <h3>🔍 Issues to Look For:</h3>
+        <ul>
+            <li>Missing clear conditional structure</li>
+            <li>No specific decision points</li>
+            <li>Unclear branching logic</li>
+            <li>Missing tag triggers</li>
+        </ul>
+    </div>
+
+    <h2>2. Complex Agent Prompt (Poor Probing Logic)</h2>
+    <div class="prompt-box">Help users with their Joblogic questions. If they have issues, ask what's wrong and try to help them. If you can't help, tell them to contact support.</div>
+    
+    <div class="issues-box">
+        <h3>🔍 Issues to Look For:</h3>
+        <ul>
+            <li>Missing <span class="highlight">#Probing</span> tag triggers</li>
+            <li>Unclear escalation criteria</li>
+            <li>No troubleshooting flow structure</li>
+            <li>Missing reasoning requirements</li>
+        </ul>
+    </div>
+
+    <h2>3. How-To Agent Prompt (Missing Instructions)</h2>
+    <div class="prompt-box">Answer questions about Joblogic features. Provide step-by-step guidance when users ask how to do something.</div>
+    
+    <div class="issues-box">
+        <h3>🔍 Issues to Look For:</h3>
+        <ul>
+            <li>Missing clarification request logic</li>
+            <li>No <span class="highlight">#Clarify</span> tag triggers</li>
+            <li>Unclear step-by-step structure</li>
+            <li>Missing answer tagging</li>
+        </ul>
+    </div>
+
+    <h2>4. Conversation LLM Prompt (Basic Version)</h2>
+    <div class="prompt-box">Talk to customers about Joblogic. Be friendly and helpful. If they want to talk to a human, connect them.</div>
+    
+    <div class="issues-box">
+        <h3>🔍 Issues to Look For:</h3>
+        <ul>
+            <li>Missing greeting patterns</li>
+            <li>No sentiment detection</li>
+            <li>Unclear escalation triggers</li>
+            <li>Missing <span class="highlight">#Escalate</span> tag logic</li>
+        </ul>
+    </div>
+
+    <h2>5. Other Agent Prompt (Missing Reasoning)</h2>
+    <div class="prompt-box">Use tools to answer Joblogic questions. Provide accurate responses based on available information.</div>
+    
+    <div class="issues-box">
+        <h3>🔍 Issues to Look For:</h3>
+        <ul>
+            <li>Missing <span class="highlight">#Reasoning</span> requirements</li>
+            <li>No tag-based response structure</li>
+            <li>Unclear tool integration logic</li>
+            <li>Missing multi-agent compatibility</li>
+        </ul>
+    </div>
+
+    <h2>6. Well-Structured Condition Agent (Should Pass)</h2>
+    <div class="prompt-box">You are an expert assistant trained to classify customer messages about Joblogic into categories:
+
+1. 'How-To' – Guidance on using Joblogic features
+2. 'Complex' – Advanced troubleshooting requiring investigation
+3. 'Issue' – Technical malfunctions or system errors
+4. 'Request' – Account modifications or service requests
+5. 'Conversation' – Greetings or unrelated messages
+
+Output Rules:
+- Generate JSON with 'type' key
+- Consider conversation history
+- Classify based on message content</div>
+    
+    <div class="good-example">
+        <h3>✅ This prompt should pass evaluation as it has:</h3>
+        <ul>
+            <li>Clear classification rules</li>
+            <li>Specific output format</li>
+            <li>Decision tree structure</li>
+            <li>Proper conditional logic</li>
+        </ul>
+    </div>
+
+    <h2>7. Tag-Rich Complex Agent (Good Example)</h2>
+    <div class="prompt-box">You are an intelligent assistant helping Joblogic customers. 
+
+Sensitive Case: Detect personal details, company info, job numbers, payments. Append #Sensitive.
+
+Handling Queries:
+- If unclear: Ask clarifying question, append #Probing
+- If specific: Provide direct answer, append #Answer
+- If unresolved: Escalate to support, append #Escalate
+
+Reasoning Requirement:
+Always provide #Reasoning before #Response.</div>
+    
+    <div class="good-example">
+        <h3>✅ This prompt demonstrates:</h3>
+        <ul>
+            <li>Proper tag trigger definitions</li>
+            <li>Clear conditional logic</li>
+            <li>Reasoning requirements</li>
+            <li>Escalation handling</li>
+        </ul>
+    </div>
+
+    <div class="test-instructions">
+        <h2>🧪 Test Instructions</h2>
+        <ol>
+            <li>Upload this PDF to the Prompt Evaluator</li>
+            <li>Select different chatbot types for each prompt</li>
+            <li>Verify the evaluator identifies the specific issues</li>
+            <li>Check that corrections focus on chatbot-specific patterns</li>
+            <li>Ensure quote-based corrections are provided</li>
+        </ol>
+    </div>
+
+    <h2>🎯 Expected Analysis Focus Areas</h2>
+    <ul>
+        <li><strong>Tag Pattern Recognition</strong>: <span class="highlight">#Sensitive</span>, <span class="highlight">#Escalate</span>, <span class="highlight">#Probing</span>, <span class="highlight">#Troubleshooting</span>, <span class="highlight">#Answer</span></li>
+        <li><strong>Conditional Logic</strong>: Branching conditions, decision trees, if-then-else structures</li>
+        <li><strong>Reasoning Requirements</strong>: <span class="highlight">#Reasoning</span> and <span class="highlight">#Response</span> format compliance</li>
+        <li><strong>Chatbot-Specific Patterns</strong>: Greeting logic, escalation triggers, tool integration</li>
+        <li><strong>Output Formatting</strong>: JSON structures, response tagging, classification rules</li>
+    </ul>
+
+    <div class="footer">
+        <p><strong>Generated for Prompt Evaluator & Corrector Testing</strong></p>
+        <p>Version: 1.0.0 | Date: ${new Date().toISOString().split('T')[0]}</p>
+    </div>
+</body>
+</html>
+
