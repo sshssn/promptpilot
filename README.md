@@ -1,15 +1,39 @@
 # PromptPilot
 
-PromptPilot is an AI-powered co-pilot designed to help developers and creators craft, refine, and manage high-quality prompts for generative AI models. It provides a streamlined interface for both generating new prompts from scratch and improving existing ones.
+PromptPilot is an advanced AI-powered co-pilot designed to help developers and creators craft, refine, and manage high-quality prompts for generative AI models. It provides a comprehensive interface for generating new prompts, improving existing ones, and testing them in real-time.
 
 ![PromptPilot Screenshot](https://raw.githubusercontent.com/sshssn/promptpilot/refs/heads/main/app-ui.png)
-## Features
 
-- **Generate New Prompts**: Create well-structured prompts by defining a role, context, sample inputs, and expected outputs.
-- **Improve Existing Prompts**: Refine and optimize your current prompts by describing the issues and the desired changes.
-- **Joblogic Integration**: Enhance prompts with contextual knowledge from the Joblogic knowledge base.
-- **Light & Dark Mode**: A sleek, modern interface with support for both light and dark themes.
-- **Copy to Clipboard**: Easily copy generated prompts to use in your projects.
+## ✨ Features
+
+### 🎯 **Core Prompt Management**
+- **Generate New Prompts**: Create well-structured prompts by defining a role, context, sample inputs, and expected outputs
+- **Improve Existing Prompts**: Refine and optimize your current prompts by describing the issues and desired changes
+- **Rewrite Prompts**: Completely rewrite prompts with different styles, tones, or approaches
+- **Evaluate Prompts**: Get detailed analysis and scoring of prompt quality and effectiveness
+- **Compare Prompts**: Side-by-side analysis of original vs improved prompts with quality metrics
+
+### 🧪 **Advanced Testing & Validation**
+- **Interactive Playground**: Real-time testing environment with streaming AI responses
+- **Stress Testing**: Comprehensive test suite with predefined test cases for different scenarios
+- **Chat History**: Persistent conversation history with session management
+- **Multimodal Support**: Upload and test with images, documents, and other media files
+
+### 🏢 **Joblogic Integration**
+- **Knowledge Enhancement**: Enhance prompts with contextual knowledge from the Joblogic knowledge base
+- **Specialized Agents**: Pre-built prompt templates for different Joblogic chatbot types:
+  - Classification Agent (condition-based routing)
+  - General Assistant (comprehensive support)
+  - Conversation Agent (greetings and flow management)
+  - Complex Query Agent (advanced troubleshooting)
+  - How-To Agent (step-by-step guidance)
+
+### 🎨 **User Experience**
+- **Modern UI**: Sleek, responsive design with ShadCN UI components
+- **Light & Dark Mode**: Seamless theme switching with system preference detection
+- **Copy to Clipboard**: One-click copying of generated prompts and responses
+- **Keyboard Shortcuts**: Efficient navigation and operation shortcuts
+- **Storage Management**: Local storage for prompts, conversations, and settings
 
 ## Tech Stack
 
