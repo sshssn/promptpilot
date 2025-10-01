@@ -185,13 +185,13 @@ export function ComparePromptsForm({ initialData, onDataChange, promptData, exis
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 8) return 'text-green-600';
+    if (score >= 8) return 'text-blue-600';
     if (score >= 6) return 'text-yellow-600';
     return 'text-red-600';
   };
 
   const getScoreBgColor = (score: number) => {
-    if (score >= 8) return 'bg-green-100 dark:bg-green-900/20';
+    if (score >= 8) return 'bg-blue-100 dark:bg-blue-900/20';
     if (score >= 6) return 'bg-yellow-100 dark:bg-yellow-900/20';
     return 'bg-red-100 dark:bg-red-900/20';
   };
@@ -223,46 +223,57 @@ export function ComparePromptsForm({ initialData, onDataChange, promptData, exis
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="original-prompt">Original Prompt</Label>
-          <Textarea
-            id="original-prompt"
-            placeholder="Paste your original prompt here..."
-            value={originalPrompt}
-            onChange={(e) => setOriginalPrompt(e.target.value)}
-            className="min-h-[120px]"
-            required
-          />
+        {/* Horizontal Layout for Prompts */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="original-prompt">Original Prompt</Label>
+              <Badge variant="outline" className="text-xs">
+                Before
+              </Badge>
+            </div>
+            <Textarea
+              id="original-prompt"
+              placeholder="Paste your original prompt here..."
+              value={originalPrompt}
+              onChange={(e) => setOriginalPrompt(e.target.value)}
+              className="min-h-[150px] text-sm"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="improved-prompt">Improved Prompt</Label>
+              <Badge variant="default" className="text-xs">
+                After
+              </Badge>
+            </div>
+            <Textarea
+              id="improved-prompt"
+              placeholder="Paste your improved prompt here..."
+              value={improvedPrompt}
+              onChange={(e) => setImprovedPrompt(e.target.value)}
+              className="min-h-[150px] text-sm"
+              required
+            />
+          </div>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="improved-prompt">Improved Prompt</Label>
-          <Textarea
-            id="improved-prompt"
-            placeholder="Paste your improved prompt here..."
-            value={improvedPrompt}
-            onChange={(e) => setImprovedPrompt(e.target.value)}
-            className="min-h-[120px]"
-            required
-          />
-        </div>
+        {/* Context and Files in Horizontal Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="context">Context (Optional)</Label>
+            <Input
+              id="context"
+              placeholder="e.g., Marketing email, Technical documentation, Creative writing..."
+              value={context}
+              onChange={(e) => setContext(e.target.value)}
+            />
+          </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="context">Context (Optional)</Label>
-          <Input
-            id="context"
-            placeholder="e.g., Marketing email, Technical documentation, Creative writing..."
-            value={context}
-            onChange={(e) => setContext(e.target.value)}
-          />
-        </div>
-
-        <div className="space-y-4">
-          <div>
-            <h3 className="text-lg font-medium mb-2">Upload Files (Optional)</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Upload Excel files, PDFs, or images to provide additional context for comparison analysis.
-            </p>
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Upload Files (Optional)</Label>
             <FileUpload
               onFilesChange={(files) => setUploadedFiles(files.map(f => f.file))}
               maxFiles={5}
@@ -303,7 +314,7 @@ export function ComparePromptsForm({ initialData, onDataChange, promptData, exis
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-green-600" />
+                <CheckCircle className="h-5 w-5 text-blue-600" />
                 Analysis Summary
               </CardTitle>
               <CardDescription>{result.summary}</CardDescription>
@@ -355,7 +366,7 @@ export function ComparePromptsForm({ initialData, onDataChange, promptData, exis
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <h4 className="font-medium text-green-600 mb-2">Strengths</h4>
+                  <h4 className="font-medium text-blue-600 mb-2">Strengths</h4>
                   <ul className="space-y-1">
                     {result.beforeAfterAnalysis.beforeStrengths.map((strength, index) => (
                       <li key={index} className="text-sm text-muted-foreground">• {strength}</li>
@@ -375,11 +386,11 @@ export function ComparePromptsForm({ initialData, onDataChange, promptData, exis
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-green-600">After Analysis</CardTitle>
+                <CardTitle className="text-blue-600">After Analysis</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <h4 className="font-medium text-green-600 mb-2">New Strengths</h4>
+                  <h4 className="font-medium text-blue-600 mb-2">New Strengths</h4>
                   <ul className="space-y-1">
                     {result.beforeAfterAnalysis.afterStrengths.map((strength, index) => (
                       <li key={index} className="text-sm text-muted-foreground">• {strength}</li>
@@ -413,7 +424,7 @@ export function ComparePromptsForm({ initialData, onDataChange, promptData, exis
                       <Badge variant="secondary">{improvement.category}</Badge>
                     </div>
                     <p className="text-sm text-muted-foreground mb-2">{improvement.description}</p>
-                    <p className="text-sm font-medium text-green-600">Impact: {improvement.impact}</p>
+                    <p className="text-sm font-medium text-blue-600">Impact: {improvement.impact}</p>
                   </div>
                 ))}
               </div>

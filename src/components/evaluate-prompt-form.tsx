@@ -249,7 +249,7 @@ export function EvaluatePromptForm({
                 {evaluationResult.needsCorrection ? (
                   <AlertTriangle className="h-5 w-5 text-orange-600" />
                 ) : (
-                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  <CheckCircle className="h-5 w-5 text-blue-600" />
                 )}
                 **Joblogic Chatbot Analysis Results**
               </CardTitle>

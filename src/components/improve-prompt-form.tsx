@@ -30,6 +30,7 @@ const formSchema = z.object({
   existingPrompt: z.string().nonempty({ message: 'Please provide the prompt to improve.' }),
   problemDescription: z.string().nonempty({ message: 'Please describe the problem.' }),
   expectedChanges: z.string().nonempty({ message: 'Please specify the expected changes.' }),
+  userSystemInstruction: z.string().optional(),
 });
 
 interface ImprovePromptFormProps {
@@ -58,6 +59,7 @@ export function ImprovePromptForm({
       existingPrompt: initialData?.originalPrompt || '',
       problemDescription: '',
       expectedChanges: '',
+      userSystemInstruction: '',
     },
   });
 
@@ -68,6 +70,7 @@ export function ImprovePromptForm({
         existingPrompt: initialData.originalPrompt || '',
         problemDescription: '',
         expectedChanges: '',
+        userSystemInstruction: '',
       });
       if (initialData.improvedPrompt) {
         setImprovedPrompt(initialData.improvedPrompt);
@@ -81,6 +84,7 @@ export function ImprovePromptForm({
       existingPrompt: '',
       problemDescription: '',
       expectedChanges: '',
+      userSystemInstruction: '',
     });
     setImprovedPrompt(null);
     setUploadedFiles([]);
@@ -200,6 +204,27 @@ export function ImprovePromptForm({
             )}
           />
           
+          <FormField
+            control={form.control}
+            name="userSystemInstruction"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Custom System Instruction (Optional)</FormLabel>
+                <FormControl>
+                  <Textarea 
+                    placeholder="Enter a custom system instruction to override Joblogic standards. Leave empty to use default Joblogic standards." 
+                    {...field} 
+                    rows={4} 
+                  />
+                </FormControl>
+                <FormDescription>
+                  If provided, this will override the default Joblogic standards. Leave empty to use the default Joblogic instruction set.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
           <div className="space-y-4">
             <div>
               <h3 className="text-lg font-medium mb-2">Upload Files (Optional)</h3>
@@ -213,13 +238,18 @@ export function ImprovePromptForm({
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
-            <Button type="submit" disabled={isLoading} className="btn-responsive">
+            <Button 
+              type="submit" 
+              disabled={isLoading || !!improvedPrompt} 
+              className="btn-responsive"
+              variant={improvedPrompt ? "secondary" : "default"}
+            >
               {isLoading ? (
                 <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
               ) : (
                 <Wand2 className="mr-2 h-4 w-4" />
               )}
-              {isLoading ? 'Refining...' : 'Refine Prompt'}
+              {isLoading ? 'Refining...' : improvedPrompt ? 'Prompt Refined' : 'Refine Prompt'}
             </Button>
             
             {hasImprovedPrompt && onAnalyzeClick && (
@@ -231,6 +261,18 @@ export function ImprovePromptForm({
               >
                 <BarChart3 className="mr-2 h-4 w-4" />
                 Analyze Changes
+              </Button>
+            )}
+            
+            {improvedPrompt && (
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={handleUndo}
+                className="btn-responsive"
+              >
+                <Undo2 className="mr-2 h-4 w-4" />
+                Clear & Start Over
               </Button>
             )}
           </div>

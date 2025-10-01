@@ -13,6 +13,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { X, Plus, Maximize2, Settings, Zap, Target, Palette, Code, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useModel, useModelsByProvider } from '@/contexts/model-context';
+import { getModelById } from '@/lib/models';
+import Image from 'next/image';
 
 interface PlaygroundConfig {
   systemPrompt: string;
@@ -29,15 +32,16 @@ interface PlaygroundSettingsProps {
   onConfigChange: (config: Partial<PlaygroundConfig>) => void;
 }
 
-const MODELS = [
-  { value: 'googleai/gemini-2.5-flash', label: 'Gemini 2.5 Flash', description: 'Latest stable model' },
-  { value: 'googleai/gemini-2.0-flash-exp', label: 'Gemini 2.0 Flash (Experimental)', description: 'Latest experimental model' },
-];
+// Models will be loaded from context
 
 export function PlaygroundSettings({ config, onConfigChange }: PlaygroundSettingsProps) {
   const [newStopSequence, setNewStopSequence] = useState('');
   const [isFullScreen, setIsFullScreen] = useState(false);
   const { toast } = useToast();
+  const { activeModel, switchModel } = useModel();
+  const openaiModels = useModelsByProvider('openai');
+  const deepseekModels = useModelsByProvider('deepseek');
+  const googleaiModels = useModelsByProvider('googleai');
 
   const handleStopSequenceAdd = () => {
     if (newStopSequence.trim() && !config.stopSequences.includes(newStopSequence.trim())) {
@@ -63,6 +67,14 @@ export function PlaygroundSettings({ config, onConfigChange }: PlaygroundSetting
 
   // Handle config changes with success notification
   const handleConfigChangeWithNotification = (changes: Partial<PlaygroundConfig>) => {
+    // If model is changing, adjust temperature to model's default
+    if (changes.model) {
+      const newModel = getModelById(changes.model);
+      if (newModel?.temperatureRestrictions?.default !== undefined) {
+        changes.temperature = newModel.temperatureRestrictions.default;
+      }
+    }
+    
     onConfigChange(changes);
     toast({
       title: "Settings Saved",
@@ -197,11 +209,81 @@ Guidelines:
                     <SelectValue placeholder="Select a model" />
                   </SelectTrigger>
                   <SelectContent>
-                    {MODELS.map((model) => (
-                      <SelectItem key={model.value} value={model.value} className="py-3">
-                        <div className="flex flex-col">
-                          <span className="font-medium">{model.label}</span>
-                          <span className="text-xs text-muted-foreground">{model.description}</span>
+                    {/* OpenAI Models */}
+                    <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">OpenAI</div>
+                    {openaiModels.map((model) => (
+                      <SelectItem key={model.id} value={model.id} className="py-3">
+                        <div className="flex items-center gap-3">
+                          <Image
+                            src="/openai-color.svg"
+                            alt={model.name}
+                            width={16}
+                            height={16}
+                            className="flex-shrink-0"
+                          />
+                          <div className="flex flex-col">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{model.name}</span>
+                              {model.isLatest && (
+                                <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
+                                  Latest
+                                </Badge>
+                              )}
+                            </div>
+                            <span className="text-xs text-muted-foreground">{model.description}</span>
+                          </div>
+                        </div>
+                      </SelectItem>
+                    ))}
+                    
+                    <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">DeepSeek</div>
+                    {deepseekModels.map((model) => (
+                      <SelectItem key={model.id} value={model.id} className="py-3">
+                        <div className="flex items-center gap-3">
+                          <Image
+                            src="/deepseek-color.svg"
+                            alt={model.name}
+                            width={16}
+                            height={16}
+                            className="flex-shrink-0"
+                          />
+                          <div className="flex flex-col">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{model.name}</span>
+                              {model.isLatest && (
+                                <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
+                                  Latest
+                                </Badge>
+                              )}
+                            </div>
+                            <span className="text-xs text-muted-foreground">{model.description}</span>
+                          </div>
+                        </div>
+                      </SelectItem>
+                    ))}
+                    
+                    <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Google AI</div>
+                    {googleaiModels.map((model) => (
+                      <SelectItem key={model.id} value={model.id} className="py-3">
+                        <div className="flex items-center gap-3">
+                          <Image
+                            src="/gemini-color.svg"
+                            alt={model.name}
+                            width={16}
+                            height={16}
+                            className="flex-shrink-0"
+                          />
+                          <div className="flex flex-col">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{model.name}</span>
+                              {model.isLatest && (
+                                <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
+                                  Latest
+                                </Badge>
+                              )}
+                            </div>
+                            <span className="text-xs text-muted-foreground">{model.description}</span>
+                          </div>
                         </div>
                       </SelectItem>
                     ))}
@@ -213,21 +295,51 @@ Guidelines:
                 <div className="space-y-3">
                   <Label htmlFor="temperature" className="text-base font-medium">
                     Temperature: {config.temperature}
+                    {(() => {
+                      const model = getModelById(config.model);
+                      if (model?.temperatureRestrictions?.supportedValues?.length === 1) {
+                        return <span className="text-xs text-muted-foreground ml-2">(Fixed at {model.temperatureRestrictions.supportedValues[0]})</span>;
+                      }
+                      return null;
+                    })()}
                   </Label>
-                  <Slider
-                    id="temperature"
-                    min={0}
-                    max={2}
-                    step={0.1}
-                    value={[config.temperature]}
-                    onValueChange={([value]) => handleConfigChangeWithNotification({ temperature: value })}
-                    className="w-full"
-                  />
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>Focused (0)</span>
-                    <span>Balanced (1)</span>
-                    <span>Creative (2)</span>
-                  </div>
+                  {(() => {
+                    const model = getModelById(config.model);
+                    const restrictions = model?.temperatureRestrictions;
+                    
+                    if (restrictions?.supportedValues?.length === 1) {
+                      // Model only supports one temperature value
+                      return (
+                        <div className="p-3 bg-muted rounded-lg text-sm text-muted-foreground">
+                          This model only supports temperature = {restrictions.supportedValues[0]}
+                        </div>
+                      );
+                    }
+                    
+                    // Model supports range of temperatures
+                    const min = restrictions?.min ?? 0;
+                    const max = restrictions?.max ?? 2;
+                    const step = 0.1;
+                    
+                    return (
+                      <>
+                        <Slider
+                          id="temperature"
+                          min={min}
+                          max={max}
+                          step={step}
+                          value={[config.temperature]}
+                          onValueChange={([value]) => handleConfigChangeWithNotification({ temperature: value })}
+                          className="w-full"
+                        />
+                        <div className="flex justify-between text-xs text-muted-foreground">
+                          <span>Focused ({min})</span>
+                          <span>Balanced (1)</span>
+                          <span>Creative ({max})</span>
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
 
                 <div className="space-y-3">

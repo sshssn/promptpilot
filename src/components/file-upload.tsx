@@ -5,14 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Upload, File, X, Image, FileSpreadsheet, FileText } from 'lucide-react';
+import { Upload, File, X, FileSpreadsheet, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface UploadedFile {
   id: string;
   file: File;
-  preview?: string;
-  type: 'image' | 'document' | 'spreadsheet';
+  content?: string;
+  type: 'txt' | 'json' | 'md' | 'csv';
 }
 
 interface FileUploadProps {
@@ -23,15 +23,17 @@ interface FileUploadProps {
 }
 
 const SUPPORTED_TYPES = {
-  image: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
-  document: ['application/pdf', 'text/plain', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
-  spreadsheet: ['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'text/csv']
+  txt: ['text/plain'],
+  json: ['application/json'],
+  md: ['text/markdown'],
+  csv: ['text/csv', 'application/csv']
 };
 
 const ALL_ACCEPTED_TYPES = [
-  ...SUPPORTED_TYPES.image,
-  ...SUPPORTED_TYPES.document,
-  ...SUPPORTED_TYPES.spreadsheet
+  ...SUPPORTED_TYPES.txt,
+  ...SUPPORTED_TYPES.json,
+  ...SUPPORTED_TYPES.md,
+  ...SUPPORTED_TYPES.csv
 ];
 
 export function FileUpload({ 
@@ -45,17 +47,21 @@ export function FileUpload({
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const getFileType = (file: File): 'image' | 'document' | 'spreadsheet' => {
-    if (SUPPORTED_TYPES.image.includes(file.type)) return 'image';
-    if (SUPPORTED_TYPES.document.includes(file.type)) return 'document';
-    if (SUPPORTED_TYPES.spreadsheet.includes(file.type)) return 'spreadsheet';
-    return 'document';
+  const getFileType = (file: File): 'txt' | 'json' | 'md' | 'csv' => {
+    const extension = file.name.split('.').pop()?.toLowerCase();
+    if (extension === 'txt') return 'txt';
+    if (extension === 'json') return 'json';
+    if (extension === 'md') return 'md';
+    if (extension === 'csv') return 'csv';
+    return 'txt';
   };
 
-  const getFileIcon = (type: 'image' | 'document' | 'spreadsheet') => {
+  const getFileIcon = (type: 'txt' | 'json' | 'md' | 'csv') => {
     switch (type) {
-      case 'image': return <Image className="h-4 w-4" />;
-      case 'spreadsheet': return <FileSpreadsheet className="h-4 w-4" />;
+      case 'txt': return <FileText className="h-4 w-4" />;
+      case 'json': return <FileText className="h-4 w-4" />;
+      case 'md': return <FileText className="h-4 w-4" />;
+      case 'csv': return <FileSpreadsheet className="h-4 w-4" />;
       default: return <FileText className="h-4 w-4" />;
     }
   };
@@ -73,7 +79,16 @@ export function FileUpload({
     return null;
   };
 
-  const handleFiles = (newFiles: FileList | File[]) => {
+  const readFileContent = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target?.result as string || '');
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.readAsText(file);
+    });
+  };
+
+  const handleFiles = async (newFiles: FileList | File[]) => {
     setError(null);
     const fileArray = Array.from(newFiles);
     
@@ -91,19 +106,21 @@ export function FileUpload({
         continue;
       }
 
-      const fileType = getFileType(file);
-      const uploadedFile: UploadedFile = {
-        id: Math.random().toString(36).substr(2, 9),
-        file,
-        type: fileType
-      };
+      try {
+        const fileType = getFileType(file);
+        const content = await readFileContent(file);
+        
+        const uploadedFile: UploadedFile = {
+          id: Math.random().toString(36).substr(2, 9),
+          file,
+          content,
+          type: fileType
+        };
 
-      // Create preview for images
-      if (fileType === 'image') {
-        uploadedFile.preview = URL.createObjectURL(file);
+        validFiles.push(uploadedFile);
+      } catch (error) {
+        setError(`Failed to read ${file.name}`);
       }
-
-      validFiles.push(uploadedFile);
     }
 
     if (validFiles.length > 0) {
@@ -186,7 +203,7 @@ export function FileUpload({
             {' '}or drag and drop
           </div>
           <div className="text-xs text-muted-foreground">
-            Excel, PDF, Images up to 10MB each
+            TXT, JSON, MD, CSV files up to 10MB each
           </div>
         </div>
       </div>
@@ -206,24 +223,21 @@ export function FileUpload({
                 <CardContent className="p-0">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      {file.preview ? (
-                        <img
-                          src={file.preview}
-                          alt={file.file.name}
-                          className="h-8 w-8 object-cover rounded"
-                        />
-                      ) : (
-                        <div className="h-8 w-8 bg-muted rounded flex items-center justify-center">
-                          {getFileIcon(file.type)}
-                        </div>
-                      )}
+                      <div className="h-8 w-8 bg-muted rounded flex items-center justify-center">
+                        {getFileIcon(file.type)}
+                      </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium truncate">
                           {file.file.name}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          {(file.file.size / 1024 / 1024).toFixed(2)} MB
+                          {(file.file.size / 1024 / 1024).toFixed(2)} MB • {file.type.toUpperCase()}
                         </div>
+                        {file.content && (
+                          <div className="text-xs text-muted-foreground mt-1 truncate">
+                            {file.content.substring(0, 50)}...
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">

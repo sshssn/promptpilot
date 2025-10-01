@@ -17,6 +17,8 @@ import {
   PanelLeftClose, 
   Home, 
   TestTube, 
+  Bug,
+  SplitSquareHorizontal,
   Edit3, 
   Check, 
   X,
@@ -47,6 +49,8 @@ interface ChatHistorySidebarProps {
   onSessionRename: (sessionId: string, newTitle: string) => void;
   onSettingsClick: () => void;
   onStressTestClick: () => void;
+  onModelTestClick: () => void;
+  onSplitChatClick: () => void;
   onClearClick: () => void;
   onHideSidebar: () => void;
   refreshTrigger?: number; // Add refresh trigger prop
@@ -61,6 +65,8 @@ export function ChatHistorySidebar({
   onSessionRename,
   onSettingsClick,
   onStressTestClick,
+  onModelTestClick,
+  onSplitChatClick,
   onClearClick,
   onHideSidebar,
   refreshTrigger
@@ -311,36 +317,65 @@ export function ChatHistorySidebar({
         </div>
       </div>
 
-      {/* Icon Buttons - Home, Settings, Test */}
+      {/* Navigation Buttons - Vertical Stack */}
       <div className="px-3 py-2 border-b border-border/50 flex-shrink-0">
-        <div className="flex justify-center gap-2">
+        <div className="space-y-1">
           <Link href="/">
             <Button
               size="sm"
               variant="outline"
-              className="h-8 w-8 p-0"
-              title="Home"
+              className="w-full justify-start h-9 px-3 text-sm font-medium"
+              title="Return to the main prompt engineering interface"
             >
-              <Home className="h-4 w-4" />
+              <Home className="h-4 w-4 mr-2" />
+              Home
             </Button>
           </Link>
           <Button
             size="sm"
             variant="outline"
             onClick={onSettingsClick}
-            className="h-8 w-8 p-0"
-            title="Settings"
+            className="w-full justify-start h-9 px-3 text-sm font-medium"
+            title="Configure model settings, temperature, and other parameters"
           >
-            <Settings className="h-4 w-4" />
+            <Settings className="h-4 w-4 mr-2" />
+            Settings
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={onSplitChatClick}
+            className="w-full justify-start h-9 px-3 text-sm font-medium"
+            title="Compare responses from different AI models side by side (Ctrl+Alt+C)"
+          >
+            <SplitSquareHorizontal className="h-4 w-4 mr-2" />
+            <span className="flex-1">Compare Models</span>
+            <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+              <span className="text-xs">⌃⌥</span>C
+            </kbd>
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={onModelTestClick}
+            className="w-full justify-start h-9 px-3 text-sm font-medium"
+            title="Test and evaluate different AI models with various prompts (SHIFT+M)"
+          >
+            <Bug className="h-4 w-4 mr-2" />
+            <span className="flex-1">Model Testing</span>
+            <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+              <span className="text-xs">⇧</span>M
+            </kbd>
           </Button>
           <Button
             size="sm"
             variant="outline"
             onClick={onStressTestClick}
-            className="h-8 w-8 p-0"
-            title="Test"
+            className="w-full justify-start h-9 px-3 text-sm font-medium"
+            title="Run stress tests and performance benchmarks on AI models"
           >
-            <TestTube className="h-4 w-4" />
+            <TestTube className="h-4 w-4 mr-2" />
+            Stress Testing
           </Button>
         </div>
       </div>
@@ -351,6 +386,7 @@ export function ChatHistorySidebar({
           onClick={handleNewSession}
           disabled={isCreatingNewChat}
           className="w-full h-9 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium rounded-lg transition-all duration-200"
+          title="Start a new conversation (SHIFT+N)"
         >
           {isCreatingNewChat ? (
             <>
@@ -360,7 +396,10 @@ export function ChatHistorySidebar({
           ) : (
             <>
               <Plus className="h-4 w-4 mr-2" />
-              New Chat
+              <span className="flex-1">New Chat</span>
+              <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-primary-foreground/20 px-1.5 font-mono text-[10px] font-medium text-primary-foreground/80 opacity-100">
+                <span className="text-xs">⇧</span>N
+              </kbd>
             </>
           )}
         </Button>

@@ -1,111 +1,61 @@
 'use client';
-
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Split, FileText, Copy } from 'lucide-react';
-
 interface DiffLine {
   type: 'unchanged' | 'added' | 'removed';
   content: string;
   lineNumber?: number;
 }
-
 interface DiffCheckerProps {
   originalText: string;
   improvedText: string;
   title?: string;
 }
-
 export function DiffChecker({ originalText, improvedText, title = "Text Comparison" }: DiffCheckerProps) {
   const [viewMode, setViewMode] = useState<'side-by-side' | 'unified'>('side-by-side');
-  // Enhanced diff algorithm - handles both line-by-line and word-by-word comparison
-  const generateDiff = (original: string, improved: string): DiffLine[] => {
-    const originalLines = original.split('\n');
-    const improvedLines = improved.split('\n');
-    
-    const diff: DiffLine[] = [];
-    let i = 0, j = 0;
-    
-    while (i < originalLines.length || j < improvedLines.length) {
+  // Simple line-by-line diff algorithm
+  const originalLines = useMemo(() => originalText.split('\n'), [originalText]);
+  const improvedLines = useMemo(() => improvedText.split('\n'), [improvedText]);
+
+  const diff = useMemo(() => {
+    const result: DiffLine[] = [];
+    const maxLines = Math.max(originalLines.length, improvedLines.length);
+    for (let i = 0; i < maxLines; i++) {
+      const originalLine = originalLines[i] || '';
+      const improvedLine = improvedLines[i] || '';
       if (i >= originalLines.length) {
-        // Only improved text left
-        diff.push({ type: 'added', content: improvedLines[j] });
-        j++;
-      } else if (j >= improvedLines.length) {
-        // Only original text left
-        diff.push({ type: 'removed', content: originalLines[i] });
-        i++;
-      } else if (originalLines[i] === improvedLines[j]) {
-        // Lines match exactly
-        diff.push({ type: 'unchanged', content: originalLines[i] });
-        i++;
-        j++;
+        result.push({ type: 'added', content: improvedLine });
+      } else if (i >= improvedLines.length) {
+        result.push({ type: 'removed', content: originalLine });
+      } else if (originalLine === improvedLine) {
+        result.push({ type: 'unchanged', content: originalLine });
       } else {
-        // Lines don't match - look for best match
-        let found = false;
-        
-        // Look ahead in improved text for a match
-        for (let k = j + 1; k < Math.min(j + 5, improvedLines.length); k++) {
-          if (originalLines[i] === improvedLines[k]) {
-            // Add all lines from improved text up to the match as added
-            for (let l = j; l < k; l++) {
-              diff.push({ type: 'added', content: improvedLines[l] });
-            }
-            j = k;
-            found = true;
-            break;
-          }
+        if (originalLine.trim() !== '') {
+          result.push({ type: 'removed', content: originalLine });
         }
-        
-        if (!found) {
-          // Look ahead in original text for a match
-          for (let k = i + 1; k < Math.min(i + 5, originalLines.length); k++) {
-            if (originalLines[k] === improvedLines[j]) {
-              // Add all lines from original text up to the match as removed
-              for (let l = i; l < k; l++) {
-                diff.push({ type: 'removed', content: originalLines[l] });
-              }
-              i = k;
-              found = true;
-              break;
-            }
-          }
-        }
-        
-        if (!found) {
-          // No match found, treat as replacement
-          diff.push({ type: 'removed', content: originalLines[i] });
-          diff.push({ type: 'added', content: improvedLines[j] });
-          i++;
-          j++;
+        if (improvedLine.trim() !== '') {
+          result.push({ type: 'added', content: improvedLine });
         }
       }
     }
-    
-    return diff;
-  };
-
-
-  const diff = generateDiff(originalText, improvedText);
-
-  // Create separate arrays for left and right sides
-  const leftSide = diff.map((line, index) => ({
+    return result;
+  }, [originalLines, improvedLines]);
+  // Create separate arrays for left and right sides (memoized)
+  const leftSide = useMemo(() => diff.map((line, index) => ({
     ...line,
     index,
     show: line.type === 'removed' || line.type === 'unchanged'
-  }));
-
-  const rightSide = diff.map((line, index) => ({
+  })), [diff]);
+  const rightSide = useMemo(() => diff.map((line, index) => ({
     ...line,
     index,
     show: line.type === 'added' || line.type === 'unchanged'
-  }));
-
+  })), [diff]);
   const renderDiffLine = (line: DiffLine, index: number, showLineNumbers = false) => {
     const baseClasses = "px-2 py-1 text-sm";
     const lineNumber = showLineNumbers ? `${index + 1}`.padStart(3, ' ') : '';
-    
     switch (line.type) {
       case 'unchanged':
         return (
@@ -132,7 +82,6 @@ export function DiffChecker({ originalText, improvedText, title = "Text Comparis
         return null;
     }
   };
-
   return (
     <Card>
       <CardHeader>
@@ -160,7 +109,6 @@ export function DiffChecker({ originalText, improvedText, title = "Text Comparis
                 <span className="text-gray-600 dark:text-gray-400">Unchanged</span>
               </div>
             </div>
-            
             <div className="flex gap-1">
               <Button
                 variant={viewMode === 'side-by-side' ? 'default' : 'outline'}
@@ -182,7 +130,6 @@ export function DiffChecker({ originalText, improvedText, title = "Text Comparis
               </Button>
             </div>
           </div>
-
           {/* Conditional rendering based on view mode */}
           {viewMode === 'side-by-side' ? (
             /* Side by side comparison */
@@ -192,16 +139,12 @@ export function DiffChecker({ originalText, improvedText, title = "Text Comparis
                 <div className="flex items-center justify-between">
                   <h4 className="font-medium text-red-600 dark:text-red-400 flex items-center gap-2">
                     <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                    {leftSide.filter(line => line.type === 'removed').length} removals
+                    Original Text
                   </h4>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => {
-                      const originalText = leftSide
-                        .filter(line => line.show)
-                        .map(line => line.content)
-                        .join('');
                       navigator.clipboard.writeText(originalText);
                     }}
                     className="h-6 text-xs"
@@ -212,28 +155,25 @@ export function DiffChecker({ originalText, improvedText, title = "Text Comparis
                 </div>
                 <div className="p-4 border-2 border-red-200 dark:border-red-800 rounded-lg bg-red-50 dark:bg-red-900/10 min-h-[300px] font-mono">
                   <div className="whitespace-pre-wrap text-sm leading-relaxed">
-                    {leftSide.map((line, index) => 
-                      line.show ? renderDiffLine(line, index) : null
-                    )}
+                    {originalLines.map((line, index) => (
+                      <div key={index} className="px-2 py-1 text-sm block w-full">
+                        {line || ' '}
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
-
               {/* Improved Text */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <h4 className="font-medium text-green-600 dark:text-green-400 flex items-center gap-2">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    {rightSide.filter(line => line.type === 'added').length} additions
+                    Improved Text
                   </h4>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => {
-                      const improvedText = rightSide
-                        .filter(line => line.show)
-                        .map(line => line.content)
-                        .join('');
                       navigator.clipboard.writeText(improvedText);
                     }}
                     className="h-6 text-xs"
@@ -244,9 +184,23 @@ export function DiffChecker({ originalText, improvedText, title = "Text Comparis
                 </div>
                 <div className="p-4 border-2 border-green-200 dark:border-green-800 rounded-lg bg-green-50 dark:bg-green-900/10 min-h-[300px] font-mono">
                   <div className="whitespace-pre-wrap text-sm leading-relaxed">
-                    {rightSide.map((line, index) => 
-                      line.show ? renderDiffLine(line, index) : null
-                    )}
+                    {improvedLines.map((line, index) => {
+                      const originalLine = originalLines[index] || '';
+                      const isChanged = line !== originalLine;
+                      const isNew = index >= originalLines.length;
+                      return (
+                        <div
+                          key={index}
+                          className={`px-2 py-1 text-sm block w-full ${
+                            isNew || isChanged
+                              ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 font-medium'
+                              : ''
+                          }`}
+                        >
+                          {line || ' '}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </div>

@@ -115,7 +115,7 @@ export function HistoryTab({ onLoadPrompt, onLoadAnalysis }: HistoryTabProps) {
       case 'generated':
         return <Wand2 className="h-4 w-4 text-blue-600" />;
       case 'improved':
-        return <PenSquare className="h-4 w-4 text-green-600" />;
+        return <PenSquare className="h-4 w-4 text-blue-600" />;
       case 'analyzed':
         return <BarChart3 className="h-4 w-4 text-purple-600" />;
       default:
@@ -128,7 +128,7 @@ export function HistoryTab({ onLoadPrompt, onLoadAnalysis }: HistoryTabProps) {
       case 'generated':
         return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300';
       case 'improved':
-        return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300';
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300';
       case 'analyzed':
         return 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300';
       default:
@@ -345,7 +345,7 @@ export function HistoryTab({ onLoadPrompt, onLoadAnalysis }: HistoryTabProps) {
                           <div className="text-xs text-muted-foreground">Clarity</div>
                         </div>
                         <div className="text-center">
-                          <div className="text-2xl font-bold text-green-600">{analysis.metrics.specificityScore}/10</div>
+                          <div className="text-2xl font-bold text-blue-600">{analysis.metrics.specificityScore}/10</div>
                           <div className="text-xs text-muted-foreground">Specificity</div>
                         </div>
                         <div className="text-center">

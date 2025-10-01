@@ -3,13 +3,14 @@
 
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { GeneratePromptForm } from './generate-prompt-form';
 import { ImprovePromptForm } from './improve-prompt-form';
 import { ComparePromptsForm } from './compare-prompts-form';
 import { RewritePromptForm } from './rewrite-prompt-form';
 import { EvaluatePromptForm } from './evaluate-prompt-form';
 import { HistoryTab } from './history-tab';
-import { PenSquare, Wand2, BarChart3, History, RefreshCw, Search } from 'lucide-react';
+import { PenSquare, Wand2, BarChart3, History, RefreshCw, Search, HelpCircle } from 'lucide-react';
 import { PromptData, AnalysisResult } from '@/lib/storage';
 import { useStorage } from '@/contexts/storage-context';
 
@@ -143,48 +144,97 @@ export function PromptPilot({ onClearSelectedPrompt }: PromptPilotProps) {
     <div className="w-full">
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <TabsList className="grid w-full grid-cols-6 bg-card/50 backdrop-blur-sm border border-border/50 shadow-lg rounded-lg p-1">
-          <TabsTrigger 
-            value="generate" 
-            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200 rounded-md"
-          >
-            <Wand2 className="mr-2 h-4 w-4" />
-            Generate New
-          </TabsTrigger>
-          <TabsTrigger 
-            value="improve" 
-            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200 rounded-md"
-          >
-            <PenSquare className="mr-2 h-4 w-4" />
-            Improve Existing
-          </TabsTrigger>
-          <TabsTrigger 
-            value="compare" 
-            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200 rounded-md"
-          >
-            <BarChart3 className="mr-2 h-4 w-4" />
-            Compare & Analyze
-          </TabsTrigger>
-          <TabsTrigger 
-            value="rewrite" 
-            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200 rounded-md"
-          >
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Rewrite
-          </TabsTrigger>
-          <TabsTrigger 
-            value="evaluate" 
-            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200 rounded-md"
-          >
-            <Search className="mr-2 h-4 w-4" />
-            Evaluate
-          </TabsTrigger>
-          <TabsTrigger 
-            value="history" 
-            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200 rounded-md"
-          >
-            <History className="mr-2 h-4 w-4" />
-            History
-          </TabsTrigger>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <TabsTrigger 
+                  value="generate" 
+                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200 rounded-md hover:bg-muted/50 data-[state=active]:border-primary/20"
+                >
+                  <Wand2 className="mr-2 h-4 w-4" />
+                  Generate New
+                </TabsTrigger>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Create new prompts from scratch using AI</p>
+              </TooltipContent>
+            </Tooltip>
+            
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <TabsTrigger 
+                  value="improve" 
+                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200 rounded-md hover:bg-muted/50 data-[state=active]:border-primary/20"
+                >
+                  <PenSquare className="mr-2 h-4 w-4" />
+                  Improve Existing
+                </TabsTrigger>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Enhance your current prompts with AI suggestions</p>
+              </TooltipContent>
+            </Tooltip>
+            
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <TabsTrigger 
+                  value="compare" 
+                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200 rounded-md hover:bg-muted/50 data-[state=active]:border-primary/20"
+                >
+                  <BarChart3 className="mr-2 h-4 w-4" />
+                  Compare & Analyze
+                </TabsTrigger>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Side-by-side comparison with detailed analysis</p>
+              </TooltipContent>
+            </Tooltip>
+            
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <TabsTrigger 
+                  value="rewrite" 
+                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200 rounded-md hover:bg-muted/50 data-[state=active]:border-primary/20"
+                >
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Rewrite
+                </TabsTrigger>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Transform prompts into different formats and styles</p>
+              </TooltipContent>
+            </Tooltip>
+            
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <TabsTrigger 
+                  value="evaluate" 
+                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200 rounded-md hover:bg-muted/50 data-[state=active]:border-primary/20"
+                >
+                  <Search className="mr-2 h-4 w-4" />
+                  Evaluate
+                </TabsTrigger>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Test and score your prompts with comprehensive evaluation</p>
+              </TooltipContent>
+            </Tooltip>
+            
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <TabsTrigger 
+                  value="history" 
+                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200 rounded-md hover:bg-muted/50 data-[state=active]:border-primary/20"
+                >
+                  <History className="mr-2 h-4 w-4" />
+                  History
+                </TabsTrigger>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Save, manage, and revisit your prompt versions</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </TabsList>
         
         <TabsContent value="generate" className="mt-6">

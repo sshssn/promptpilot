@@ -3,12 +3,14 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from '@/components/theme-provider';
 import { StorageProvider } from '@/contexts/storage-context';
+import { ModelProvider } from '@/contexts/model-context';
 import { GlobalFooter } from '@/components/global-footer';
 import { KeyboardShortcuts } from '@/components/keyboard-shortcuts';
+import { FlowiseWidget } from '@/components/flowise-widget';
 
 export const metadata: Metadata = {
-  title: 'PromptPilot',
-  description: 'Your AI-powered co-pilot for crafting and refining high-quality prompts.',
+  title: 'PromptPilot - AI Prompt Engineering Platform',
+  description: 'Your AI-powered co-pilot for crafting, refining, and testing high-quality prompts. Create, improve, and validate prompts with comprehensive testing tools.',
   icons: {
     icon: '/favicon.svg',
     shortcut: '/favicon.svg',
@@ -33,16 +35,20 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <StorageProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {children}
-            <KeyboardShortcuts />
-            <Toaster />
-          </ThemeProvider>
+          <ModelProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              {children}
+              <KeyboardShortcuts />
+              <Toaster />
+              {/* Global Flowise popup widget in bottom-right - DISABLED */}
+              {/* <FlowiseWidget /> */}
+            </ThemeProvider>
+          </ModelProvider>
         </StorageProvider>
       </body>
     </html>

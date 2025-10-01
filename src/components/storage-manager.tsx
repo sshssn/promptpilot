@@ -138,7 +138,7 @@ export function StorageManager() {
             </div>
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <BarChart3 className="h-4 w-4 text-green-600" />
+                <BarChart3 className="h-4 w-4 text-blue-600" />
                 <span className="text-sm font-medium">Analyses</span>
               </div>
               <div className="text-2xl font-bold">{storageManager.usageInfo.analysesCount}</div>

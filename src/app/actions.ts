@@ -27,6 +27,7 @@ const improvePromptSchema = z.object({
   existingPrompt: z.string().nonempty('Existing prompt is required.'),
   problemDescription: z.string().nonempty('Problem description is required.'),
   expectedChanges: z.string().nonempty('Expected changes are required.'),
+  userSystemInstruction: z.string().optional(),
 });
 export type ImprovePromptInputs = z.infer<typeof improvePromptSchema>;
 

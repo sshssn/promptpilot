@@ -164,7 +164,7 @@ export function PlaygroundInterface({
       case 'user':
         return 'bg-blue-500';
       case 'assistant':
-        return 'bg-green-500';
+        return 'bg-blue-500';
       case 'system':
         return 'bg-purple-500';
       default:
@@ -186,11 +186,11 @@ export function PlaygroundInterface({
   };
 
   return (
-    <div className="flex flex-col h-full bg-background relative">
+    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900 relative">
       {/* Messages */}
       <ScrollArea 
         ref={scrollAreaRef} 
-        className="flex-1 p-3 md:p-4"
+        className="flex-1 p-3 md:p-4 overflow-y-auto"
         onScrollCapture={checkScrollPosition}
       >
         <div className="max-w-2xl mx-auto space-y-3 md:space-y-4">
@@ -200,7 +200,7 @@ export function PlaygroundInterface({
             <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} mb-4`}>
               <div className={`max-w-[80%] ${message.role === 'user' ? 'order-2' : 'order-1'}`}>
                 {message.role === 'user' ? (
-                  <div className="bg-primary text-primary-foreground rounded-2xl rounded-br-md px-4 py-3 shadow-sm">
+                  <div className="bg-primary text-primary-foreground rounded-2xl rounded-br-md px-3 py-2 shadow-sm">
                     {message.attachments && message.attachments.length > 0 && (
                       <div className="mb-3 space-y-2">
                         {message.attachments.map((attachment) => (
@@ -319,8 +319,8 @@ export function PlaygroundInterface({
         </div>
       )}
 
-      {/* Input Area */}
-      <div className="border-t bg-background/50 backdrop-blur-sm p-3 md:p-4 flex-shrink-0">
+      {/* Input Area - Fixed at bottom */}
+      <div className="border-t bg-slate-50/50 dark:bg-slate-900/50 backdrop-blur-sm p-3 md:p-4 flex-shrink-0 sticky bottom-0 z-10">
         <div className="max-w-2xl mx-auto">
           {/* File Upload Area */}
           {showUpload && (

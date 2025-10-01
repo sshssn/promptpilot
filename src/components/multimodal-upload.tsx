@@ -4,14 +4,14 @@ import { useState, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { X, Upload, FileText, Image, File, Paperclip } from 'lucide-react';
+import { X, Upload, FileText, File, Paperclip } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface UploadedFile {
   id: string;
   file: File;
-  preview?: string;
-  type: 'image' | 'pdf' | 'document' | 'other';
+  content?: string;
+  type: 'txt' | 'json' | 'md' | 'csv' | 'other';
 }
 
 interface MultimodalUploadProps {
@@ -31,21 +31,20 @@ export function MultimodalUpload({
   const { toast } = useToast();
 
   const getFileType = (file: File): UploadedFile['type'] => {
-    if (file.type.startsWith('image/')) return 'image';
-    if (file.type === 'application/pdf') return 'pdf';
-    if (file.type.includes('document') || file.type.includes('text')) return 'document';
+    const extension = file.name.split('.').pop()?.toLowerCase();
+    if (extension === 'txt') return 'txt';
+    if (extension === 'json') return 'json';
+    if (extension === 'md') return 'md';
+    if (extension === 'csv') return 'csv';
     return 'other';
   };
 
-  const createPreview = (file: File): Promise<string | undefined> => {
-    return new Promise((resolve) => {
-      if (file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onload = (e) => resolve(e.target?.result as string);
-        reader.readAsDataURL(file);
-      } else {
-        resolve(undefined);
-      }
+  const readFileContent = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target?.result as string || '');
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.readAsText(file);
     });
   };
 
@@ -73,18 +72,42 @@ export function MultimodalUpload({
       return;
     }
 
+    // Validate file types
+    const allowedExtensions = ['txt', 'json', 'md', 'csv'];
+    const invalidFiles = fileArray.filter(file => {
+      const extension = file.name.split('.').pop()?.toLowerCase();
+      return !extension || !allowedExtensions.includes(extension);
+    });
+
+    if (invalidFiles.length > 0) {
+      toast({
+        title: "Invalid file type",
+        description: "Only TXT, JSON, MD, and CSV files are allowed",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const newFiles: UploadedFile[] = [];
     
     for (const file of fileArray) {
-      const fileType = getFileType(file);
-      const preview = await createPreview(file);
-      
-      newFiles.push({
-        id: `${Date.now()}-${Math.random()}`,
-        file,
-        preview,
-        type: fileType,
-      });
+      try {
+        const fileType = getFileType(file);
+        const content = await readFileContent(file);
+        
+        newFiles.push({
+          id: `${Date.now()}-${Math.random()}`,
+          file,
+          content,
+          type: fileType,
+        });
+      } catch (error) {
+        toast({
+          title: "Error reading file",
+          description: `Failed to read ${file.name}`,
+          variant: "destructive",
+        });
+      }
     }
 
     const updatedFiles = [...uploadedFiles, ...newFiles];
@@ -127,11 +150,13 @@ export function MultimodalUpload({
 
   const getFileIcon = (type: UploadedFile['type']) => {
     switch (type) {
-      case 'image':
-        return <Image className="h-4 w-4" />;
-      case 'pdf':
+      case 'txt':
         return <FileText className="h-4 w-4" />;
-      case 'document':
+      case 'json':
+        return <FileText className="h-4 w-4" />;
+      case 'md':
+        return <FileText className="h-4 w-4" />;
+      case 'csv':
         return <FileText className="h-4 w-4" />;
       default:
         return <File className="h-4 w-4" />;
@@ -175,7 +200,7 @@ export function MultimodalUpload({
               </button>
             </p>
             <p className="text-xs text-muted-foreground">
-              Supports images, PDFs, and documents up to {maxSize}MB
+              Supports TXT, JSON, MD, and CSV files up to {maxSize}MB
             </p>
           </div>
         </div>
@@ -184,7 +209,7 @@ export function MultimodalUpload({
           ref={fileInputRef}
           type="file"
           multiple
-          accept="image/*,.pdf,.doc,.docx,.txt"
+          accept=".txt,.json,.md,.csv"
           onChange={handleFileInput}
           className="hidden"
         />
@@ -204,23 +229,20 @@ export function MultimodalUpload({
             {uploadedFiles.map((file) => (
               <Card key={file.id} className="p-3 bg-white/10 dark:bg-black/20 backdrop-blur-sm border-white/20 dark:border-white/10 rounded-xl">
                 <div className="flex items-center gap-3">
-                  {file.preview ? (
-                    <img
-                      src={file.preview}
-                      alt={file.file.name}
-                      className="h-10 w-10 rounded object-cover"
-                    />
-                  ) : (
-                    <div className="h-10 w-10 rounded bg-muted flex items-center justify-center">
-                      {getFileIcon(file.type)}
-                    </div>
-                  )}
+                  <div className="h-10 w-10 rounded bg-muted flex items-center justify-center">
+                    {getFileIcon(file.type)}
+                  </div>
                   
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{file.file.name}</p>
                     <p className="text-xs text-muted-foreground">
-                      {formatFileSize(file.file.size)}
+                      {formatFileSize(file.file.size)} • {file.type.toUpperCase()}
                     </p>
+                    {file.content && (
+                      <p className="text-xs text-muted-foreground mt-1 truncate">
+                        {file.content.substring(0, 50)}...
+                      </p>
+                    )}
                   </div>
                   
                   <Button

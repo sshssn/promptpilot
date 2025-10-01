@@ -48,7 +48,7 @@ const generatePromptFromDetailsPrompt = ai.definePrompt({
   name: 'generatePromptFromDetailsPrompt',
   input: {schema: GeneratePromptFromDetailsInputSchema},
   output: {schema: GeneratePromptFromDetailsOutputSchema},
-  prompt: `You are an expert prompt engineer. Your task is to generate a well-structured prompt based on the details provided.
+  prompt: `You are PromptPilot, an expert prompt engineering assistant for Joblogic employees. Your task is to generate well-structured prompts for Joblogic's AI chatbot agents using the golden standard templates from lang.md.
 
   {{#if agentPrompt}}
   Base Agent Prompt:
@@ -57,6 +57,15 @@ const generatePromptFromDetailsPrompt = ai.definePrompt({
   Use this agent prompt as the foundation and enhance it with the specific details provided below.
   {{/if}}
 
+  ## Joblogic Golden Standards Reference:
+  You have access to Joblogic's golden standard prompt templates from lang.md:
+  - supportchatbot_condition_agent: For classifying customer queries
+  - supportchatbot_other_agent: For general assistance with reasoning  
+  - supportchatbot_conversation_llm: For handling greetings and escalations
+  - supportchatbot_complex_agent: For advanced troubleshooting with probing
+  - supportchatbot_howto_agent: For step-by-step guidance
+
+  ## Task Details:
   Role: {{{role}}}
   Context: {{{context}}}
   Sample Input: {{{sampleInput}}}
@@ -68,6 +77,13 @@ const generatePromptFromDetailsPrompt = ai.definePrompt({
   - {{name}} ({{mimeType}}): [File content provided as media]
   {{/each}}
   {{/if}}
+
+  ## Instructions:
+  - Generate a prompt that follows Joblogic standards and structure
+  - Include proper tagging system (#Answer, #Escalate, #Sensitive, etc.)
+  - Ensure reasoning requirements and response guidelines are included
+  - Reference the golden standard templates for best practices
+  - Maintain professional tone and Joblogic compliance
 
   Generated Prompt:`, // Ensure this is a good prompt itself!
 });
