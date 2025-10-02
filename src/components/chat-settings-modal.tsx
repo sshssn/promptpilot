@@ -128,7 +128,7 @@ export function ChatSettingsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Settings className="h-5 w-5" />
@@ -179,14 +179,14 @@ export function ChatSettingsModal({
               </Label>
               
               {temperatureRestrictions?.supportedValues?.length === 1 ? (
-                <div className="p-3 bg-muted rounded-lg text-sm text-muted-foreground">
+                <div className="p-4 bg-muted rounded-lg text-sm text-muted-foreground border">
                   This model only supports temperature = {temperatureRestrictions.supportedValues[0]}
                 </div>
               ) : (
                 <>
                   <Slider
                     min={temperatureRestrictions?.min ?? 0}
-                    max={temperatureRestrictions?.max ?? 2}
+                    max={temperatureRestrictions?.max ?? 1}
                     step={0.1}
                     value={[localTemperature]}
                     onValueChange={([value]) => setLocalTemperature(value)}
@@ -194,8 +194,8 @@ export function ChatSettingsModal({
                   />
                   <div className="flex justify-between text-xs text-muted-foreground">
                     <span>Focused ({temperatureRestrictions?.min ?? 0})</span>
-                    <span>Balanced (1)</span>
-                    <span>Creative ({temperatureRestrictions?.max ?? 2})</span>
+                    <span>Balanced (0.7)</span>
+                    <span>Creative ({temperatureRestrictions?.max ?? 1})</span>
                   </div>
                 </>
               )}
@@ -282,9 +282,10 @@ export function ChatSettingsModal({
                 }}
                 placeholder={useGoldenStandard ? "Enter system prompt for this model..." : "Enter your custom prompt..."}
                 className="min-h-[300px] resize-none font-mono text-sm"
+                maxLength={2000}
               />
               <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span>Characters: {(useGoldenStandard ? localSystemPrompt : localCustomPrompt).length}</span>
+                <span>Characters: {(useGoldenStandard ? localSystemPrompt : localCustomPrompt).length}/2000</span>
                 <span>Lines: {(useGoldenStandard ? localSystemPrompt : localCustomPrompt).split('\n').length}</span>
               </div>
             </div>

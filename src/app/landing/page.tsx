@@ -47,6 +47,12 @@ export default function LandingPage() {
             </div>
             <div className="flex items-center gap-2">
               <ModelToggle showLabel={false} />
+              <Link href="/app">
+                <Button variant="ghost" size="sm">
+                  <Wand2 className="h-4 w-4 mr-1" />
+                  App
+                </Button>
+              </Link>
               <Link href="/playground">
                 <Button variant="ghost" size="sm">
                   <Play className="h-4 w-4 mr-1" />
@@ -87,53 +93,22 @@ export default function LandingPage() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/playground">
+            <Link href="/app">
               <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3">
-                <Play className="mr-2 h-4 w-4" />
-                Start
+                <Wand2 className="mr-2 h-4 w-4" />
+                Start Building
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
-            <Link href="/playground/compare">
+            <Link href="/playground">
               <Button variant="outline" size="lg" className="px-8 py-3">
-                <SplitSquareHorizontal className="mr-2 h-4 w-4" />
-                Compare Models
+                <Play className="mr-2 h-4 w-4" />
+                Playground
               </Button>
             </Link>
           </div>
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
-          <div className="text-center">
-            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mx-auto mb-3">
-              <Bot className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-            </div>
-            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">8+</div>
-            <div className="text-sm text-slate-600 dark:text-slate-400">AI Models</div>
-          </div>
-          <div className="text-center">
-            <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mx-auto mb-3">
-              <TestTube className="h-6 w-6 text-green-600 dark:text-green-400" />
-            </div>
-            <div className="text-2xl font-bold text-green-600 dark:text-green-400">25+</div>
-            <div className="text-sm text-slate-600 dark:text-slate-400">Test Scenarios</div>
-          </div>
-          <div className="text-center">
-            <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mx-auto mb-3">
-              <TrendingUp className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-            </div>
-            <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">Pro</div>
-            <div className="text-sm text-slate-600 dark:text-slate-400">Quality</div>
-          </div>
-          <div className="text-center">
-            <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center mx-auto mb-3">
-              <Zap className="h-6 w-6 text-orange-600 dark:text-orange-400" />
-            </div>
-            <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">Fast</div>
-            <div className="text-sm text-slate-600 dark:text-slate-400">Performance</div>
-          </div>
-        </div>
 
         {/* Use Cases */}
         <div className="mb-16">
@@ -352,9 +327,9 @@ export default function LandingPage() {
             The AI Product team can start creating better AI prompts in minutes. No setup, no learning curve, just results.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/playground">
+            <Link href="/app">
               <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3">
-                <Play className="mr-2 h-4 w-4" />
+                <Wand2 className="mr-2 h-4 w-4" />
                 Start Building
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>

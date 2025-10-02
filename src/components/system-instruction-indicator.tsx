@@ -97,7 +97,7 @@ export function SystemInstructionIndicator({
       setInstructionInfo({
         shouldUseLangMd: analysis.shouldUseLangMd,
         reasoning,
-        appliedSource: analysis.shouldUseLangMd ? 'golden_standard_default' : 'user_instruction'
+        appliedSource: analysis.shouldUseLangMd ? 'lang_md_default' : 'user_instruction'
       });
     };
 
@@ -133,7 +133,7 @@ export function SystemInstructionIndicator({
   }
 
   const isUsingUserInstruction = instructionInfo.appliedSource === 'user_instruction';
-  const isUsingGoldenStandard = instructionInfo.appliedSource === 'golden_standard_default';
+  const isUsingGoldenStandard = instructionInfo.appliedSource === 'lang_md_default';
 
   if (isEditing) {
     return (

@@ -25,3 +25,4 @@ FROM_EMAIL=onboarding@resend.dev
 The feedback form will send emails to `sarmadh+pp@joblogic.com` using the Resend service.
 
 
+

@@ -298,28 +298,28 @@ export default function FeedbackPage() {
                     <Textarea
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      placeholder="Provide as much detail as possible. Include steps to reproduce if it's a bug, or specific requirements if it's a feature request. (Minimum 10 words)"
+                      placeholder="Provide as much detail as possible. Include steps to reproduce if it's a bug, or specific requirements if it's a feature request. (Minimum 100 words)"
                       className="w-full min-h-[150px] resize-none"
                       maxLength={500}
                       required
                     />
                     <div className="flex justify-between text-xs">
                       <span className="text-slate-500">
-                        {formData.description.split(' ').filter(word => word.length > 0).length}/10 words minimum
+                        {formData.description.split(' ').filter(word => word.length > 0).length}/100 words minimum
                       </span>
                       <span className={formData.description.length > 450 ? 'text-red-500' : 'text-slate-500'}>
                         {formData.description.length}/500 characters
                       </span>
                     </div>
-                    {formData.description.split(' ').filter(word => word.length > 0).length > 0 && formData.description.split(' ').filter(word => word.length > 0).length < 10 && (
-                      <p className="text-sm text-red-500">Description must be at least 10 words</p>
+                    {formData.description.split(' ').filter(word => word.length > 0).length > 0 && formData.description.split(' ').filter(word => word.length > 0).length < 100 && (
+                      <p className="text-sm text-red-500">Description must be at least 100 words</p>
                     )}
                   </div>
                 </div>
               </div>
 
               {/* Submit Button */}
-              <div className="pt-6">
+              <div className="pt-6 flex justify-center">
                 <Button
                   type="submit"
                   disabled={
@@ -329,14 +329,15 @@ export default function FeedbackPage() {
                     !formData.description || 
                     !formData.reporter ||
                     formData.reporter.length < 4 ||
-                    formData.description.split(' ').filter(word => word.length > 0).length < 10
+                    formData.description.split(' ').filter(word => word.length > 0).length < 100
                   }
-                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                  size="default"
                 >
                   {isSubmitting ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                      Sending to Team...
+                      Sending...
                     </>
                   ) : (
                     <>

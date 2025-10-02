@@ -16,10 +16,24 @@ export function PromptDisplay({ prompt }: PromptDisplayProps) {
   const [hasCopied, setHasCopied] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(prompt);
-    setHasCopied(true);
-    setTimeout(() => setHasCopied(false), 2000);
+  const copyToClipboard = async () => {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(prompt);
+      } else {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = prompt;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+      setHasCopied(true);
+      setTimeout(() => setHasCopied(false), 2000);
+    } catch (error) {
+      console.error('Copy failed:', error);
+    }
   };
 
   return (

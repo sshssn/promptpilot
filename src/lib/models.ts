@@ -19,6 +19,36 @@ export interface ModelConfig {
 
 export const OPENAI_MODELS: ModelConfig[] = [
   {
+    id: 'gpt-4o',
+    name: 'GPT-4o',
+    provider: 'openai',
+    apiEndpoint: 'https://api.openai.com/v1/chat/completions',
+    icon: '/openai-color.svg',
+    description: 'GPT-4 Omni model with multimodal capabilities',
+    maxTokens: 128000,
+    capabilities: ['text', 'vision', 'function-calling', 'multimodal'],
+    temperatureRestrictions: {
+      min: 0,
+      max: 1,
+      default: 0.7
+    }
+  },
+  {
+    id: 'gpt-4o-mini',
+    name: 'GPT-4o Mini',
+    provider: 'openai',
+    apiEndpoint: 'https://api.openai.com/v1/chat/completions',
+    icon: '/openai-color.svg',
+    description: 'Efficient GPT-4o mini for faster responses and lower costs',
+    maxTokens: 128000,
+    capabilities: ['text', 'vision', 'function-calling'],
+    temperatureRestrictions: {
+      min: 0,
+      max: 1,
+      default: 0.7
+    }
+  },
+  {
     id: 'gpt-4.1',
     name: 'GPT-4.1',
     provider: 'openai',
@@ -29,8 +59,9 @@ export const OPENAI_MODELS: ModelConfig[] = [
     capabilities: ['text', 'vision', 'function-calling', 'coding', 'long-context'],
     isLatest: true,
     temperatureRestrictions: {
-      default: 1.0,
-      supportedValues: [1.0]
+      min: 0,
+      max: 1,
+      default: 0.7
     }
   },
   {
@@ -44,8 +75,9 @@ export const OPENAI_MODELS: ModelConfig[] = [
     capabilities: ['text', 'vision', 'function-calling', 'coding'],
     isLatest: true,
     temperatureRestrictions: {
-      default: 1.0,
-      supportedValues: [1.0]
+      min: 0,
+      max: 1,
+      default: 0.7
     }
   },
   {
@@ -59,8 +91,9 @@ export const OPENAI_MODELS: ModelConfig[] = [
     capabilities: ['text', 'coding', 'fast'],
     isLatest: true,
     temperatureRestrictions: {
-      default: 1.0,
-      supportedValues: [1.0]
+      min: 0,
+      max: 1,
+      default: 0.7
     }
   },
   {
@@ -120,7 +153,12 @@ export const DEEPSEEK_MODELS: ModelConfig[] = [
     description: 'Latest DeepSeek V3.1 model for general tasks without thinking mode',
     maxTokens: 8192,
     capabilities: ['text', 'code', 'general'],
-    isLatest: true
+    isLatest: true,
+    temperatureRestrictions: {
+      min: 0,
+      max: 1,
+      default: 0.7
+    }
   },
   {
     id: 'deepseek-v3.1-thinking',
@@ -131,7 +169,12 @@ export const DEEPSEEK_MODELS: ModelConfig[] = [
     description: 'DeepSeek V3.1 with thinking mode for complex reasoning tasks',
     maxTokens: 8192,
     capabilities: ['text', 'code', 'thinking', 'reasoning'],
-    isLatest: true
+    isLatest: true,
+    temperatureRestrictions: {
+      min: 0,
+      max: 1,
+      default: 0.7
+    }
   }
 ];
 
@@ -145,7 +188,12 @@ export const GOOGLEAI_MODELS: ModelConfig[] = [
     description: 'Latest stable Gemini model',
     maxTokens: 8192,
     capabilities: ['text', 'vision', 'multimodal'],
-    isLatest: true
+    isLatest: true,
+    temperatureRestrictions: {
+      min: 0,
+      max: 1,
+      default: 0.7
+    }
   },
   {
     id: 'googleai/gemini-2.0-flash-exp',
@@ -155,7 +203,12 @@ export const GOOGLEAI_MODELS: ModelConfig[] = [
     icon: '/gemini-color.svg',
     description: 'Latest experimental Gemini model',
     maxTokens: 8192,
-    capabilities: ['text', 'vision', 'multimodal']
+    capabilities: ['text', 'vision', 'multimodal'],
+    temperatureRestrictions: {
+      min: 0,
+      max: 1,
+      default: 0.7
+    }
   }
 ];
 

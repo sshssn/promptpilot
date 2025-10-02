@@ -383,7 +383,18 @@ export default function AppPage() {
   const handleCopyPrompt = async () => {
     if (selectedPrompt && promptData[selectedPrompt as keyof typeof promptData]) {
       try {
-        await navigator.clipboard.writeText(promptData[selectedPrompt as keyof typeof promptData]);
+        const textToCopy = promptData[selectedPrompt as keyof typeof promptData];
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(textToCopy);
+        } else {
+          // Fallback for older browsers
+          const textArea = document.createElement('textarea');
+          textArea.value = textToCopy;
+          document.body.appendChild(textArea);
+          textArea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textArea);
+        }
         setCopied(true);
         toast({
           title: "Copied!",
@@ -391,6 +402,7 @@ export default function AppPage() {
         });
         setTimeout(() => setCopied(false), 2000);
       } catch (err) {
+        console.error('Copy failed:', err);
         toast({
           title: "Error",
           description: "Failed to copy prompt to clipboard.",
@@ -405,57 +417,80 @@ export default function AppPage() {
     setCopied(false);
   };
 
-  const handlePopulatePrompt = (prompt: string) => {
-    // This will be handled by the improve prompt form
-    navigator.clipboard.writeText(prompt);
-    toast({
-      title: "Copied!",
-      description: "Prompt copied to clipboard. Paste it in the 'Improve Existing' tab.",
-    });
+  const handlePopulatePrompt = async (prompt: string) => {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(prompt);
+      } else {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = prompt;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+      toast({
+        title: "Copied!",
+        description: "Prompt copied to clipboard. Paste it in the 'Improve Existing' tab.",
+      });
+    } catch (error) {
+      console.error('Copy failed:', error);
+      toast({
+        title: "Error",
+        description: "Failed to copy prompt to clipboard.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
-    <div className="bg-background flex flex-col flex-1 min-h-0">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50 flex-shrink-0">
-        <div className="flex items-center justify-between px-4 py-1.5">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col">
+      {/* Modern Header */}
+      <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-700/50 flex-shrink-0">
+        <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setShowTemplates(!showTemplates)}
-              className="gap-1 text-xs h-7"
+              className="gap-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 text-xs"
             >
-              <FileText className="h-3 w-3" />
-              <span className="font-medium">Templates</span>
+              <FileText className="h-3.5 w-3.5" />
+              Templates
             </Button>
-            <div className="h-3 w-px bg-border" />
-            <div className="flex items-baseline gap-2">
-              <h1 className="text-xl md:text-2xl font-headline font-bold text-foreground tracking-tight bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
-                PromptPilot
-              </h1>
-              <Logo />
+            <div className="h-5 w-px bg-slate-300 dark:bg-slate-600" />
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg">
+                <Logo size={16} className="text-white" />
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <h1 className="text-lg font-bold text-slate-900 dark:text-white">PromptPilot</h1>
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-sm">
+                    Beta
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Create & improve AI prompts</p>
+              </div>
             </div>
           </div>
-          <div className="flex items-center gap-1">
-            <Link href="/landing">
-              <Button variant="outline" size="sm" className="gap-1 text-xs h-7">
-                ← Back to Home
-              </Button>
-            </Link>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
+              <Link href="/playground">
+                <Button variant="ghost" size="sm" className="gap-2 text-xs h-8">
+                  <Play className="h-3 w-3" />
+                  Playground
+                </Button>
+              </Link>
+              <Link href="/playground/compare">
+                <Button variant="ghost" size="sm" className="gap-2 text-xs h-8">
+                  <SplitSquareHorizontal className="h-3 w-3" />
+                  Compare
+                </Button>
+              </Link>
+            </div>
             <ModelToggle showLabel={false} />
-            <Link href="/playground">
-              <Button variant="outline" size="sm" className="gap-1 text-xs h-7">
-                <Play className="h-3 w-3" />
-                <span className="font-medium">Playground</span>
-              </Button>
-            </Link>
-            <Link href="/playground/compare">
-              <Button variant="outline" size="sm" className="gap-1 text-xs h-7">
-                <SplitSquareHorizontal className="h-3 w-3" />
-                <span className="font-medium">Compare</span>
-              </Button>
-            </Link>
             <ThemeToggle />
           </div>
         </div>
@@ -473,8 +508,8 @@ export default function AppPage() {
 
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col min-w-0">
-          <div className="flex-1 p-2 md:p-3 overflow-auto">
-            <div className="max-w-4xl mx-auto space-y-6">
+          <div className="flex-1 p-2 md:p-2.5 overflow-auto">
+            <div className="max-w-3xl mx-auto space-y-4">
               {selectedPrompt && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">

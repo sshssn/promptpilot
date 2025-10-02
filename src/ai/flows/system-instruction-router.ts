@@ -70,9 +70,11 @@ export async function routeSystemInstruction(
 ): Promise<SystemInstructionRouterOutput> {
   // If golden standard is disabled, always use user instruction
   if (!useGoldenStandard) {
+    const customInstruction = input.userSystemInstruction?.trim();
+    
     return {
       shouldUseLangMd: false,
-      finalSystemInstruction: input.userSystemInstruction || 'You are a helpful AI assistant.',
+      finalSystemInstruction: customInstruction || 'You are a helpful AI assistant.',
       reasoning: "Using custom instruction as Golden Standard is disabled.",
       appliedSource: "user_instruction"
     };
@@ -119,7 +121,7 @@ Context: "{{context}}"
 - shouldUseLangMd: true if using default golden standard instruction, false if using user instruction
 - finalSystemInstruction: The complete system instruction to use
 - reasoning: Clear explanation of why this decision was made
-- appliedSource: Either "user_instruction" or "golden_standard_default"
+- appliedSource: Either "user_instruction" or "lang_md_default"
 
 Remember: The goal is to respect user intent while ensuring proper compliance with golden standards when no specific instruction is provided.`,
 });
@@ -141,7 +143,7 @@ const systemInstructionRouterFlow = ai.defineFlow(
         shouldUseLangMd: true,
         finalSystemInstruction: DEFAULT_GOLDEN_STANDARD_SYSTEM_INSTRUCTION,
         reasoning: "Using Golden Standard (proven templates). No meaningful custom instruction provided.",
-        appliedSource: "golden_standard_default"
+        appliedSource: "lang_md_default"
       };
     }
 

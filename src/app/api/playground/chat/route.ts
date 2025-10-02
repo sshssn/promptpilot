@@ -16,6 +16,7 @@ interface PlaygroundConfig {
   topP: number;
   topK: number;
   stopSequences: string[];
+  useGoldenStandard?: boolean;
 }
 
 export async function POST(request: NextRequest) {
@@ -90,9 +91,9 @@ export async function POST(request: NextRequest) {
             // Capture token usage for Gemini
             if (result?.usage) {
               tokenUsage = {
-                prompt_tokens: result.usage.promptTokens || 0,
-                completion_tokens: result.usage.candidatesTokens || 0,
-                total_tokens: (result.usage.promptTokens || 0) + (result.usage.candidatesTokens || 0)
+                prompt_tokens: result.usage.inputTokens || 0,
+                completion_tokens: result.usage.outputTokens || 0,
+                total_tokens: result.usage.totalTokens || 0
               };
             }
           } else if (modelName.startsWith('gpt') || modelName.startsWith('o3')) {

@@ -12,6 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
+import { ChatSettingsModal } from '@/components/chat-settings-modal';
 import { 
   ArrowLeft, 
   SplitSquareHorizontal, 
@@ -43,7 +44,10 @@ import {
   TestTube,
   Bug,
   RotateCcw,
-  Shuffle
+  Shuffle,
+  Crown,
+  Sparkles,
+  Wand2
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { ModelToggle } from '@/components/model-toggle';
@@ -100,6 +104,11 @@ export default function ComparePage() {
   const [leftTokenUsage, setLeftTokenUsage] = useState<{[key: string]: {prompt_tokens: number, completion_tokens: number, total_tokens: number}}>({});
   const [rightTokenUsage, setRightTokenUsage] = useState<{[key: string]: {prompt_tokens: number, completion_tokens: number, total_tokens: number}}>({});
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+  
+  // Golden Standard vs Custom prompt state
+  const [useGoldenStandard, setUseGoldenStandard] = useState(true);
+  const [customPrompt, setCustomPrompt] = useState('');
+  const [savedCustomPrompt, setSavedCustomPrompt] = useState('');
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -112,6 +121,9 @@ export default function ComparePage() {
         setTemperature(data.temperature || 0.7);
         setMaxTokens(data.maxTokens || 1000);
         setSelectedModel(data.selectedModel || availableModels[0]?.id);
+        setCustomPrompt(data.customPrompt || '');
+        setSavedCustomPrompt(data.savedCustomPrompt || '');
+        setUseGoldenStandard(data.useGoldenStandard !== false);
       } catch (error) {
         console.error('Error loading saved data:', error);
       }
@@ -125,10 +137,13 @@ export default function ComparePage() {
       systemPrompt,
       temperature,
       maxTokens,
-      selectedModel
+      selectedModel,
+      customPrompt,
+      savedCustomPrompt,
+      useGoldenStandard
     };
     localStorage.setItem('playground-data', JSON.stringify(data));
-  }, [messages, systemPrompt, temperature, maxTokens, selectedModel]);
+  }, [messages, systemPrompt, temperature, maxTokens, selectedModel, customPrompt, savedCustomPrompt, useGoldenStandard]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -178,41 +193,51 @@ export default function ComparePage() {
     try {
       // Call APIs for both models simultaneously
       const [leftResponse, rightResponse] = await Promise.all([
-        fetch('/api/chat', {
+        fetch('/api/playground/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            messages: [...leftMessages, userMessage].map(msg => ({
+            messages: [
+              { role: 'system', content: leftSystemPrompt || (useGoldenStandard ? systemPrompt : customPrompt) },
+              ...leftMessages.map(msg => ({
               role: msg.role,
               content: msg.content
             })),
+              { role: 'user', content: message }
+            ],
             config: {
               model: leftModel,
-              systemPrompt: leftSystemPrompt || systemPrompt,
+              systemPrompt: leftSystemPrompt || (useGoldenStandard ? systemPrompt : customPrompt),
               temperature: leftTemperature,
               maxTokens: leftMaxTokens,
               topP: 0.9,
               topK: 40,
-              stopSequences: []
+              stopSequences: [],
+              useGoldenStandard: useGoldenStandard
             }
           }),
         }),
-        fetch('/api/chat', {
+        fetch('/api/playground/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            messages: [...rightMessages, userMessage].map(msg => ({
+            messages: [
+              { role: 'system', content: rightSystemPrompt || (useGoldenStandard ? systemPrompt : customPrompt) },
+              ...rightMessages.map(msg => ({
               role: msg.role,
               content: msg.content
             })),
+              { role: 'user', content: message }
+            ],
             config: {
               model: rightModel,
-              systemPrompt: rightSystemPrompt || systemPrompt,
+              systemPrompt: rightSystemPrompt || (useGoldenStandard ? systemPrompt : customPrompt),
               temperature: rightTemperature,
               maxTokens: rightMaxTokens,
               topP: 0.9,
               topK: 40,
-              stopSequences: []
+              stopSequences: [],
+              useGoldenStandard: useGoldenStandard
             }
           }),
         })
@@ -394,7 +419,7 @@ export default function ComparePage() {
       <div className="h-full flex flex-col">
         {/* Modern Header */}
         <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-700/50 flex-shrink-0">
-          <div className="flex items-center justify-between px-6 py-4">
+          <div className="flex items-center justify-between px-8 py-5">
             <div className="flex items-center gap-4">
               <Button
                 variant="ghost"
@@ -417,6 +442,101 @@ export default function ComparePage() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              {/* Golden Standard vs Custom Toggle */}
+              <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
+                <Button
+                  onClick={() => {
+                    if (useGoldenStandard) {
+                      // Already on golden standard, do nothing
+                      return;
+                    } else {
+                      // Save current custom prompt before switching
+                      if (systemPrompt && systemPrompt !== 'You are a helpful AI assistant.') {
+                        setSavedCustomPrompt(systemPrompt);
+                      }
+                      setUseGoldenStandard(true);
+                      toast({
+                        title: "Switched to Golden Standard",
+                        description: "Your custom prompt has been saved and can be restored later.",
+                        duration: 2000,
+                      });
+                    }
+                  }}
+                  variant={useGoldenStandard ? "default" : "ghost"}
+                  size="sm"
+                  className="gap-2 text-xs h-8"
+                >
+                  <Crown className="h-3 w-3" />
+                  Golden Standard
+                </Button>
+                <Button
+                  onClick={() => {
+                    if (!useGoldenStandard) {
+                      // If already on custom, just open settings
+                      setShowSettings(true);
+                    } else {
+                      // Switch to custom and restore saved prompt if available
+                      setUseGoldenStandard(false);
+                      if (savedCustomPrompt) {
+                        setCustomPrompt(savedCustomPrompt);
+                        toast({
+                          title: "Switched to Custom",
+                          description: "Your saved custom prompt has been restored.",
+                          duration: 2000,
+                        });
+                      } else {
+                        // Initialize with a basic custom prompt if none exists
+                        const defaultCustomPrompt = "You are a helpful AI assistant. Please provide clear, accurate, and helpful responses.";
+                        setCustomPrompt(defaultCustomPrompt);
+                        setSavedCustomPrompt(defaultCustomPrompt);
+                        setShowSettings(true);
+                        toast({
+                          title: "Switched to Custom",
+                          description: "You can now edit your custom prompt in the settings.",
+                          duration: 2000,
+                        });
+                      }
+                    }
+                  }}
+                  variant={!useGoldenStandard ? "default" : "ghost"}
+                  size="sm"
+                  className="gap-2 text-xs h-8"
+                >
+                  <Sparkles className="h-3 w-3" />
+                  Custom
+                </Button>
+              </div>
+              
+              <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
+                <Button
+                  onClick={() => router.push('/app')}
+                  variant="ghost"
+                  size="sm"
+                  className="gap-2 text-xs h-8"
+                >
+                  <Wand2 className="h-3 w-3" />
+                  App
+                </Button>
+                <Button
+                  onClick={() => router.push('/playground')}
+                  variant="ghost"
+                  size="sm"
+                  className="gap-2 text-xs h-8"
+                >
+                  <Play className="h-3 w-3" />
+                  Playground
+                </Button>
+              </div>
+              
+              <Button
+                onClick={handleClear}
+                variant="outline"
+                size="sm"
+                className="gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800"
+              >
+                <X className="h-4 w-4" />
+                Clear
+              </Button>
               <Button
                 onClick={() => setShowSettings(!showSettings)}
                 variant="outline"
@@ -507,7 +627,7 @@ export default function ComparePage() {
                   </div>
                 )}
               </div>
-              <div className="flex-1 p-4 overflow-y-auto bg-slate-50 dark:bg-slate-900">
+              <div className="flex-1 p-6 overflow-y-auto bg-slate-50 dark:bg-slate-900">
                 {leftMessages.length === 0 ? (
                   <div className="text-center text-slate-500 dark:text-slate-400 mt-12">
                     <div className="relative mb-6">
@@ -522,45 +642,43 @@ export default function ComparePage() {
                 ) : (
                   <div className="space-y-4">
                     {leftMessages.map((message) => (
-                      <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} group`}>
-                        <div className={`max-w-[85%] rounded-2xl px-4 py-2 shadow-sm ${
-                          message.role === 'user' 
-                            ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white' 
-                            : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700'
-                        }`}>
-                          <div className="flex items-start gap-3">
-                            <div className="flex-shrink-0">
+                      <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                               {message.role === 'user' ? (
-                                <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
-                                  <User className="h-3 w-3 text-white" />
+                          // User message with bubble (GPT style)
+                          <div className="max-w-[85%] rounded-2xl px-4 py-2 bg-blue-500 text-white">
+                            <MarkdownRenderer content={message.content} />
                                 </div>
                               ) : (
-                                <div className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center">
-                                  <ModelIcon modelId={message.model || leftModel} size={12} />
+                          // AI response with GPT-like styling
+                          <div className="max-w-[95%] flex items-start gap-4 group">
+                            <div className="w-8 h-8 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                              <ModelIcon modelId={message.model || leftModel} size={16} />
                                 </div>
-                              )}
-                            </div>
-                            <div className="flex-1">
+                            <div className="flex-1 min-w-0">
+                              <div className="prose prose-sm max-w-none dark:prose-invert">
                               <MarkdownRenderer content={message.content} />
+                              </div>
+                              <div className="mt-3 flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
                               {message.model && (
-                                <div className="text-xs opacity-70 mt-2 flex items-center gap-2">
-                                  <ModelIcon modelId={message.model} size={10} />
-                                  {message.model}
+                                  <span className="font-medium">{message.model}</span>
+                                )}
                                   {leftTokenUsage[message.id] && (
-                                    <span className="bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-md">
-                                      tokens {leftTokenUsage[message.id].total_tokens}
+                                  <div className="flex items-center gap-2">
+                                    <span>•</span>
+                                    <span className="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md">
+                                      {leftTokenUsage[message.id].total_tokens} tokens
                                     </span>
-                                  )}
                                 </div>
                               )}
+                              </div>
                               
                               {/* Action Buttons */}
-                              <div className="mt-3 flex items-center gap-2 ">
+                              <div className="mt-3 flex items-center gap-2">
                                 <Button
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => copyToClipboard(message.content, message.id)}
-                                  className="h-7 px-2 text-xs hover:bg-slate-100 dark:hover:bg-slate-700"
+                                  className="h-8 px-2 text-xs hover:bg-slate-100 dark:hover:bg-slate-700"
                                 >
                                   {copiedMessageId === message.id ? (
                                     <Check className="h-3 w-3 mr-1" />
@@ -572,7 +690,7 @@ export default function ComparePage() {
                               </div>
                             </div>
                           </div>
-                        </div>
+                        )}
                       </div>
                     ))}
                     {isStreaming && (
@@ -661,7 +779,7 @@ export default function ComparePage() {
                   </div>
                 )}
               </div>
-              <div className="flex-1 p-4 overflow-y-auto bg-slate-50 dark:bg-slate-900">
+              <div className="flex-1 p-6 overflow-y-auto bg-slate-50 dark:bg-slate-900">
                 {rightMessages.length === 0 ? (
                   <div className="text-center text-slate-500 dark:text-slate-400 mt-12">
                     <div className="relative mb-6">
@@ -676,45 +794,43 @@ export default function ComparePage() {
                 ) : (
                   <div className="space-y-4">
                     {rightMessages.map((message) => (
-                      <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} group`}>
-                        <div className={`max-w-[85%] rounded-2xl px-4 py-2 shadow-sm ${
-                          message.role === 'user' 
-                            ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white' 
-                            : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700'
-                        }`}>
-                          <div className="flex items-start gap-3">
-                            <div className="flex-shrink-0">
+                      <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                               {message.role === 'user' ? (
-                                <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
-                                  <User className="h-3 w-3 text-white" />
+                          // User message with bubble (GPT style)
+                          <div className="max-w-[85%] rounded-2xl px-4 py-2 bg-blue-500 text-white">
+                            <MarkdownRenderer content={message.content} />
                                 </div>
                               ) : (
-                                <div className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center">
-                                  <ModelIcon modelId={message.model || rightModel} size={12} />
+                          // AI response with GPT-like styling
+                          <div className="max-w-[95%] flex items-start gap-4 group">
+                            <div className="w-8 h-8 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                              <ModelIcon modelId={message.model || rightModel} size={16} />
                                 </div>
-                              )}
-                            </div>
-                            <div className="flex-1">
+                            <div className="flex-1 min-w-0">
+                              <div className="prose prose-sm max-w-none dark:prose-invert">
                               <MarkdownRenderer content={message.content} />
+                              </div>
+                              <div className="mt-3 flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
                               {message.model && (
-                                <div className="text-xs opacity-70 mt-2 flex items-center gap-2">
-                                  <ModelIcon modelId={message.model} size={10} />
-                                  {message.model}
+                                  <span className="font-medium">{message.model}</span>
+                                )}
                                   {rightTokenUsage[message.id] && (
-                                    <span className="bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-md">
-                                      tokens {rightTokenUsage[message.id].total_tokens}
+                                  <div className="flex items-center gap-2">
+                                    <span>•</span>
+                                    <span className="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md">
+                                      {rightTokenUsage[message.id].total_tokens} tokens
                                     </span>
-                                  )}
                                 </div>
                               )}
+                              </div>
                               
                               {/* Action Buttons */}
-                              <div className="mt-3 flex items-center gap-2 ">
+                              <div className="mt-3 flex items-center gap-2">
                                 <Button
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => copyToClipboard(message.content, message.id)}
-                                  className="h-7 px-2 text-xs hover:bg-slate-100 dark:hover:bg-slate-700"
+                                  className="h-8 px-2 text-xs hover:bg-slate-100 dark:hover:bg-slate-700"
                                 >
                                   {copiedMessageId === message.id ? (
                                     <Check className="h-3 w-3 mr-1" />
@@ -726,7 +842,7 @@ export default function ComparePage() {
                               </div>
                             </div>
                           </div>
-                        </div>
+                        )}
                       </div>
                     ))}
                     {isStreaming && (
@@ -743,52 +859,88 @@ export default function ComparePage() {
           </div>
         </div>
 
-        {/* Bottom Input Area */}
-        <div className="flex-shrink-0 border-t p-4 bg-slate-50 dark:bg-slate-900">
-          <div className="max-w-3xl mx-auto">
-            <div className="flex items-end gap-2">
-              <div className="flex-1 relative">
+        {/* Modern Input Area - Fixed at bottom */}
+        <div className="flex-shrink-0 border-t border-slate-200/50 dark:border-slate-700/50 p-6 bg-slate-50 dark:bg-slate-900 min-h-[100px] sticky bottom-0 z-10">
+          <div className="max-w-5xl mx-auto">
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-indigo-600/10 rounded-3xl blur-sm group-focus-within:opacity-100 opacity-0 transition-opacity duration-300"></div>
+              <div className="relative bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-3xl shadow-lg hover:shadow-xl transition-all duration-200 group-focus-within:border-blue-300 dark:group-focus-within:border-blue-600">
                 <Textarea
                   value={sharedInput}
                   onChange={(e) => setSharedInput(e.target.value)}
-                  placeholder="Type your message here..."
-                  className="flex-1 min-h-[60px] resize-none pr-12"
+                  placeholder="Ask anything... (Shift + Enter for new line)"
+                  className="flex-1 min-h-[60px] max-h-[180px] resize-none pr-20 pl-6 py-4 text-base border-0 bg-transparent focus:ring-0 focus:outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();
+                      if (!isStreaming) {
                       sendToBothSides(sharedInput);
                       setSharedInput('');
+                      }
                     }
                   }}
+                  disabled={isStreaming}
                 />
-                <div className="absolute right-3 top-3 flex items-center gap-1">
+                <div className="absolute right-2 top-2 flex items-center gap-1">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setShowFileUpload(!showFileUpload)}
-                    className="h-8 w-8 p-0"
+                    disabled={isStreaming}
+                    className="h-7 w-7 p-0 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"
+                    title="Upload Files"
                   >
                     <Paperclip className="h-4 w-4" />
                   </Button>
+                  {isStreaming ? (
                   <Button
-                    variant="ghost"
+                      onClick={() => {
+                        // Stop generation logic would go here
+                        setIsStreaming(false);
+                        toast({
+                          title: "Generation Stopped",
+                          description: "Response generation has been stopped.",
+                        });
+                      }}
                     size="sm"
-                    className="h-8 w-8 p-0"
+                      variant="destructive"
+                      className="h-7 px-2 bg-red-500 hover:bg-red-600 text-white shadow-lg"
                   >
-                    <Mic className="h-4 w-4" />
+                      <X className="h-4 w-4" />
                   </Button>
-                </div>
-              </div>
+                  ) : (
               <Button
                 onClick={() => {
                   sendToBothSides(sharedInput);
                   setSharedInput('');
                 }}
                 disabled={!sharedInput.trim() || isStreaming}
-                size="lg"
+                      size="sm"
+                      className="h-7 px-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl"
               >
                 <Send className="h-4 w-4" />
               </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center justify-between mt-3 text-xs text-slate-500 dark:text-slate-400">
+              <div className="flex items-center gap-4">
+                <span>Press Enter to send</span>
+                <span>•</span>
+                <span>Shift + Enter for new line</span>
+                {isStreaming && (
+                  <>
+                    <span>•</span>
+                    <span className="text-blue-600 dark:text-blue-400">Generating responses...</span>
+                  </>
+                )}
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-lg px-2 py-1">
+                  <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Compare Mode</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -873,173 +1025,26 @@ export default function ComparePage() {
         </div>
       )}
 
-      {/* Settings Modal for Both Models */}
-      {showSettings && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]" onClick={(e) => {
-          if (e.target === e.currentTarget) {
-            setShowSettings(false);
-          }
-        }}>
-          <div className="bg-background rounded-lg p-6 w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200 dark:border-slate-700">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold">Model Comparison Settings</h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowSettings(false)}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-            
-            <div className="space-y-8">
-              {/* Model A Settings */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg">
-                    <ModelIcon modelId={leftModel} size={16} className="text-white" />
-                  </div>
-                  <h4 className="text-lg font-semibold">Model A Settings</h4>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <Label className="text-sm font-medium">Temperature: {leftTemperature}</Label>
-                    <div className="mt-2 space-y-2">
-                      <Slider
-                        value={[leftTemperature]}
-                        onValueChange={(value) => setLeftTemperature(value[0])}
-                        max={2}
-                        min={0}
-                        step={0.1}
-                        className="w-full"
-                      />
-                      <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>Focused</span>
-                        <span>Creative</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <Label className="text-sm font-medium">Max Tokens: {leftMaxTokens}</Label>
-                    <div className="mt-2 space-y-2">
-                      <Slider
-                        value={[leftMaxTokens]}
-                        onValueChange={(value) => setLeftMaxTokens(value[0])}
-                        max={4000}
-                        min={100}
-                        step={100}
-                        className="w-full"
-                      />
-                      <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>Short</span>
-                        <span>Long</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div>
-                  <Label className="text-sm font-medium">System Instructions</Label>
-                  <Textarea
-                    value={leftSystemPrompt}
-                    onChange={(e) => setLeftSystemPrompt(e.target.value)}
-                    placeholder="Enter system instructions for Model A..."
-                    className="mt-2 min-h-[100px]"
-                  />
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Model B Settings */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg">
-                    <ModelIcon modelId={rightModel} size={16} className="text-white" />
-                  </div>
-                  <h4 className="text-lg font-semibold">Model B Settings</h4>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <Label className="text-sm font-medium">Temperature: {rightTemperature}</Label>
-                    <div className="mt-2 space-y-2">
-                      <Slider
-                        value={[rightTemperature]}
-                        onValueChange={(value) => setRightTemperature(value[0])}
-                        max={2}
-                        min={0}
-                        step={0.1}
-                        className="w-full"
-                      />
-                      <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>Focused</span>
-                        <span>Creative</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <Label className="text-sm font-medium">Max Tokens: {rightMaxTokens}</Label>
-                    <div className="mt-2 space-y-2">
-                      <Slider
-                        value={[rightMaxTokens]}
-                        onValueChange={(value) => setRightMaxTokens(value[0])}
-                        max={4000}
-                        min={100}
-                        step={100}
-                        className="w-full"
-                      />
-                      <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>Short</span>
-                        <span>Long</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div>
-                  <Label className="text-sm font-medium">System Instructions</Label>
-                  <Textarea
-                    value={rightSystemPrompt}
-                    onChange={(e) => setRightSystemPrompt(e.target.value)}
-                    placeholder="Enter system instructions for Model B..."
-                    className="mt-2 min-h-[100px]"
-                  />
-                </div>
-              </div>
-
-              <Separator />
-
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label className="text-sm font-medium">Reasoning Mode</Label>
-                    <p className="text-xs text-muted-foreground">Show reasoning animation for supported models</p>
-                  </div>
-                  <Switch 
-                    checked={reasoningMode} 
-                    onCheckedChange={setReasoningMode}
-                  />
-                </div>
-              </div>
-
-              <div className="pt-4">
-                <Button
-                  onClick={handleClear}
-                  variant="outline"
-                  className="w-full gap-2"
-                >
-                  <X className="h-4 w-4" />
-                  Clear Chat
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Advanced Settings Modal */}
+      <ChatSettingsModal
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        model={selectedModel}
+        onModelChange={setSelectedModel}
+        temperature={temperature}
+        onTemperatureChange={setTemperature}
+        maxTokens={maxTokens}
+        onMaxTokensChange={setMaxTokens}
+        systemPrompt={systemPrompt}
+        onSystemPromptChange={setSystemPrompt}
+        availableModels={availableModels}
+        useGoldenStandard={useGoldenStandard}
+        customPrompt={customPrompt}
+        onCustomPromptChange={(prompt) => {
+          setCustomPrompt(prompt);
+          setSavedCustomPrompt(prompt); // Also save it as the saved version
+        }}
+      />
     </div>
   );
 }

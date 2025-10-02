@@ -60,7 +60,17 @@ export function PromptTemplatesSidebar({
 
   const handleCopyTemplate = async (template: PromptTemplate) => {
     try {
-      await navigator.clipboard.writeText(template.content);
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(template.content);
+      } else {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = template.content;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
       setCopiedId(template.id);
       toast({
         title: "Copied!",
@@ -68,9 +78,10 @@ export function PromptTemplatesSidebar({
       });
       setTimeout(() => setCopiedId(null), 2000);
     } catch (error) {
+      console.error('Copy failed:', error);
       toast({
         title: "Error",
-        description: "Failed to copy template.",
+        description: "Failed to copy template to clipboard.",
         variant: "destructive",
       });
     }
@@ -78,6 +89,7 @@ export function PromptTemplatesSidebar({
 
   const handleSelectTemplate = (template: PromptTemplate) => {
     onSelectTemplate(template);
+    onToggle(); // Auto dismiss the popup
     toast({
       title: "Template Selected",
       description: "Template has been loaded for editing.",

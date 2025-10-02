@@ -48,7 +48,8 @@ import {
   Sparkles,
   Crown,
   RotateCcw,
-  Shuffle
+  Shuffle,
+  Wand2
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { ModelToggle } from '@/components/model-toggle';
@@ -64,7 +65,6 @@ import { useStorage } from '@/contexts/storage-context';
 import { useModel } from '@/contexts/model-context';
 import { routePromptEnhancement } from '@/ai/flows/smart-prompt-router';
 import { StressTestInterface } from '@/components/stress-test-interface';
-import { ModelTestInterface } from '@/components/model-test-interface';
 import { ModelIcon } from '@/components/model-icon';
 import { LoadingAnimation } from '@/components/loading-animation';
 import { SystemInstructionIndicator } from '@/components/system-instruction-indicator';
@@ -87,7 +87,6 @@ export default function ComparePage() {
   const [showSettings, setShowSettings] = useState(false);
   const [showFileUpload, setShowFileUpload] = useState(false);
   const [showStressTest, setShowStressTest] = useState(false);
-  const [showModelTest, setShowModelTest] = useState(false);
   const [reasoningMode, setReasoningMode] = useState(false);
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [showScrollButton, setShowScrollButton] = useState(false);
@@ -414,15 +413,15 @@ export default function ComparePage() {
 
     setIsLoading(true);
     
-    // Add user message
-    const userMsg = {
-      id: `user-${Date.now()}`,
-      role: 'user',
-      content: userMessage,
-      timestamp: Date.now()
-    };
+    // Remove the last assistant message (the one we're regenerating)
+    const messagesWithoutLastAssistant = messages.filter((msg, index) => {
+      if (index === messages.length - 1 && msg.role === 'assistant') {
+        return false; // Remove the last assistant message
+      }
+      return true;
+    });
     
-    // Add assistant message placeholder
+    // Add new assistant message placeholder
     const assistantMessage = {
       id: `assistant-${Date.now()}`,
       role: 'assistant',
@@ -431,7 +430,7 @@ export default function ComparePage() {
       model: modelId
     };
     
-    setMessages(prev => [...prev, userMsg, assistantMessage]);
+    setMessages([...messagesWithoutLastAssistant, assistantMessage]);
 
     try {
       const response = await fetch('/api/playground/chat', {
@@ -442,7 +441,7 @@ export default function ComparePage() {
         body: JSON.stringify({
           messages: [
             { role: 'system', content: useGoldenStandard ? systemPrompt : customPrompt },
-            ...messages.map(msg => ({
+            ...messagesWithoutLastAssistant.map(msg => ({
               role: msg.role,
               content: msg.content
             })),
@@ -572,26 +571,26 @@ export default function ComparePage() {
       <div className="min-h-screen flex flex-col">
         {/* Modern Header */}
         <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-700/50 flex-shrink-0">
-          <div className="flex items-center justify-between px-6 py-4">
-            <div className="flex items-center gap-4">
+          <div className="flex items-center justify-between px-4 py-3">
+            <div className="flex items-center gap-3">
                     <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => router.back()}
-                className="gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800"
+                className="gap-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 text-xs"
               >
-                <ArrowLeft className="h-4 w-4" />
+                <ArrowLeft className="h-3.5 w-3.5" />
                 Back
               </Button>
-              <div className="h-6 w-px bg-slate-300 dark:bg-slate-600" />
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl">
-                  <Logo size={20} className="text-white" />
+              <div className="h-5 w-px bg-slate-300 dark:bg-slate-600" />
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg">
+                  <Logo size={16} className="text-white" />
                 </div>
                 <div>
-                  <div className="flex items-center gap-2">
-                    <h1 className="text-xl font-bold text-slate-900 dark:text-white">AI Playground</h1>
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-sm">
+                  <div className="flex items-center gap-1.5">
+                    <h1 className="text-lg font-bold text-slate-900 dark:text-white">AI Playground</h1>
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-sm">
                       Beta
                     </span>
                   </div>
@@ -644,6 +643,10 @@ export default function ComparePage() {
                             duration: 2000,
                           });
                         } else {
+                          // Initialize with a basic custom prompt if none exists
+                          const defaultCustomPrompt = "You are a helpful AI assistant. Please provide clear, accurate, and helpful responses.";
+                          setCustomPrompt(defaultCustomPrompt);
+                          setSavedCustomPrompt(defaultCustomPrompt);
                           setShowSettings(true);
                           toast({
                             title: "Switched to Custom",
@@ -663,36 +666,32 @@ export default function ComparePage() {
                 </div>
               </div>
               
-              <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
+              <div className="flex items-center gap-0.5 bg-slate-100 dark:bg-slate-800 rounded-md p-0.5">
+                <Button
+                  onClick={() => router.push('/app')}
+                  variant="ghost"
+                  size="sm"
+                  className="gap-1.5 text-xs h-7 px-2"
+                >
+                  <Wand2 className="h-3 w-3" />
+                  App
+                </Button>
                 <Button
                   onClick={() => {
                     setShowStressTest(true);
-                    setShowModelTest(false);
                   }}
                   variant={showStressTest ? "default" : "ghost"}
                   size="sm"
-                  className="gap-2 text-xs h-8"
+                  className="gap-1.5 text-xs h-7 px-2"
                 >
                   <TestTube className="h-3 w-3" />
                   Stress
                 </Button>
                 <Button
-                  onClick={() => {
-                    setShowModelTest(true);
-                    setShowStressTest(false);
-                  }}
-                  variant={showModelTest ? "default" : "ghost"}
-                  size="sm"
-                  className="gap-2 text-xs h-8"
-                >
-                  <Bug className="h-3 w-3" />
-                  Test
-                </Button>
-                <Button
                   onClick={() => router.push('/playground/compare')}
                   variant="ghost"
                   size="sm"
-                  className="gap-2 text-xs h-8"
+                  className="gap-1.5 text-xs h-7 px-2"
                 >
                   <SplitSquareHorizontal className="h-3 w-3" />
                   Compare
@@ -747,34 +746,12 @@ export default function ComparePage() {
                 />
               </div>
             </div>
-          ) : showModelTest ? (
-            /* Model Test View - Full Width */
-              <div className="flex-1 p-6 overflow-auto">
-              <div className="max-w-6xl mx-auto">
-                  <div className="mb-6">
-                    <div className="flex items-center gap-4 mb-4">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowModelTest(false)}
-                        className="gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800"
-                    >
-                        <ArrowLeft className="h-4 w-4" />
-                      Back to Playground
-                    </Button>
-                      <div className="h-4 w-px bg-slate-300 dark:bg-slate-600" />
-                      <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Model Testing</h2>
-                  </div>
-                </div>
-                <ModelTestInterface />
-              </div>
-            </div>
             ) : (
               <>
             {/* Messages */}
             <div 
               id="messages-container"
-              className="flex-1 overflow-y-auto p-4 min-h-0 relative"
+              className="flex-1 overflow-y-auto p-3 min-h-0 relative"
               onScroll={checkScrollPosition}
             >
               {messages.length === 0 ? (
@@ -916,8 +893,8 @@ export default function ComparePage() {
 
 
             {/* Modern Input Area - Fixed at bottom */}
-            <div className="flex-shrink-0 border-t border-slate-200/50 dark:border-slate-700/50 p-4 bg-slate-50 dark:bg-slate-900 min-h-[80px] sticky bottom-0 z-10">
-              <div className="max-w-3xl mx-auto">
+        <div className="flex-shrink-0 border-t border-slate-200/50 dark:border-slate-700/50 p-3 bg-slate-50 dark:bg-slate-900 min-h-[70px] sticky bottom-0 z-10">
+          <div className="max-w-2xl mx-auto">
                 <div className="relative group">
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-indigo-600/10 rounded-3xl blur-sm group-focus-within:opacity-100 opacity-0 transition-opacity duration-300"></div>
                   <div className="relative bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-3xl shadow-lg hover:shadow-xl transition-all duration-200 group-focus-within:border-blue-300 dark:group-focus-within:border-blue-600">
@@ -925,7 +902,7 @@ export default function ComparePage() {
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
                       placeholder="Ask anything... (Shift + Enter for new line)"
-                      className="flex-1 min-h-[50px] max-h-[160px] resize-none pr-20 pl-4 py-3 text-sm border-0 bg-transparent focus:ring-0 focus:outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                      className="flex-1 min-h-[45px] max-h-[140px] resize-none pr-16 pl-3 py-2.5 text-sm border-0 bg-transparent focus:ring-0 focus:outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' && !e.shiftKey) {
                           e.preventDefault();
@@ -1056,7 +1033,10 @@ export default function ComparePage() {
         availableModels={availableModels}
         useGoldenStandard={useGoldenStandard}
         customPrompt={customPrompt}
-        onCustomPromptChange={setCustomPrompt}
+        onCustomPromptChange={(prompt) => {
+          setCustomPrompt(prompt);
+          setSavedCustomPrompt(prompt); // Also save it as the saved version
+        }}
       />
     </div>
   );
