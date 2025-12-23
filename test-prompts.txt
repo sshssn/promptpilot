@@ -1,0 +1,143 @@
+
+# Joblogic Chatbot Prompts - Test Document
+
+## Overview
+This document contains sample prompts for testing the Prompt Evaluator & Corrector tool. Each prompt represents different scenarios that the evaluator should analyze and improve.
+
+---
+
+## 1. Basic Conditional Agent Prompt (Needs Improvement)
+
+**Prompt:**
+You are a support chatbot. When users ask questions, help them. If they have problems, fix them. If they need help, help them.
+
+**Issues to Look For:**
+- Missing clear conditional structure
+- No specific decision points
+- Unclear branching logic
+- Missing tag triggers
+
+---
+
+## 2. Complex Agent Prompt (Poor Probing Logic)
+
+**Prompt:**
+Help users with their Joblogic questions. If they have issues, ask what's wrong and try to help them. If you can't help, tell them to contact support.
+
+**Issues to Look For:**
+- Missing #Probing tag triggers
+- Unclear escalation criteria
+- No troubleshooting flow structure
+- Missing reasoning requirements
+
+---
+
+## 3. How-To Agent Prompt (Missing Instructions)
+
+**Prompt:**
+Answer questions about Joblogic features. Provide step-by-step guidance when users ask how to do something.
+
+**Issues to Look For:**
+- Missing clarification request logic
+- No #Clarify tag triggers
+- Unclear step-by-step structure
+- Missing answer tagging
+
+---
+
+## 4. Conversation LLM Prompt (Basic Version)
+
+**Prompt:**
+Talk to customers about Joblogic. Be friendly and helpful. If they want to talk to a human, connect them.
+
+**Issues to Look For:**
+- Missing greeting patterns
+- No sentiment detection
+- Unclear escalation triggers
+- Missing #Escalate tag logic
+
+---
+
+## 5. Other Agent Prompt (Missing Reasoning)
+
+**Prompt:**
+Use tools to answer Joblogic questions. Provide accurate responses based on available information.
+
+**Issues to Look For:**
+- Missing #Reasoning requirements
+- No tag-based response structure
+- Unclear tool integration logic
+- Missing multi-agent compatibility
+
+---
+
+## 6. Well-Structured Condition Agent (Should Pass)
+
+**Prompt:**
+You are an expert assistant trained to classify customer messages about Joblogic into categories:
+
+1. 'How-To' – Guidance on using Joblogic features
+2. 'Complex' – Advanced troubleshooting requiring investigation
+3. 'Issue' – Technical malfunctions or system errors
+4. 'Request' – Account modifications or service requests
+5. 'Conversation' – Greetings or unrelated messages
+
+Output Rules:
+- Generate JSON with 'type' key
+- Consider conversation history
+- Classify based on message content
+
+**This prompt should pass evaluation as it has:**
+- Clear classification rules
+- Specific output format
+- Decision tree structure
+- Proper conditional logic
+
+---
+
+## 7. Tag-Rich Complex Agent (Good Example)
+
+**Prompt:**
+You are an intelligent assistant helping Joblogic customers. 
+
+Sensitive Case: Detect personal details, company info, job numbers, payments. Append #Sensitive.
+
+Handling Queries:
+- If unclear: Ask clarifying question, append #Probing
+- If specific: Provide direct answer, append #Answer
+- If unresolved: Escalate to support, append #Escalate
+
+Reasoning Requirement:
+Always provide #Reasoning before #Response.
+
+**This prompt demonstrates:**
+- Proper tag trigger definitions
+- Clear conditional logic
+- Reasoning requirements
+- Escalation handling
+
+---
+
+## Test Instructions
+
+1. Upload this PDF to the Prompt Evaluator
+2. Select different chatbot types for each prompt
+3. Verify the evaluator identifies the specific issues
+4. Check that corrections focus on chatbot-specific patterns
+5. Ensure quote-based corrections are provided
+
+---
+
+## Expected Analysis Focus Areas
+
+- **Tag Pattern Recognition**: #Sensitive, #Escalate, #Probing, #Troubleshooting, #Answer
+- **Conditional Logic**: Branching conditions, decision trees, if-then-else structures
+- **Reasoning Requirements**: #Reasoning and #Response format compliance
+- **Chatbot-Specific Patterns**: Greeting logic, escalation triggers, tool integration
+- **Output Formatting**: JSON structures, response tagging, classification rules
+
+---
+
+*Generated for Prompt Evaluator & Corrector Testing*
+*Version: 1.0.0*
+*Date: 2025-09-16*
